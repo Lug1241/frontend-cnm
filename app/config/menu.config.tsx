@@ -5,8 +5,10 @@ export interface SubModule {
   id: string;
   label: string;
   path: string;
+  icon?: string;
   allowedTypes?: UserType[]; 
   allowedRoles?: string[];   
+  
 }
 
 export interface SystemModule {
@@ -17,16 +19,32 @@ export interface SystemModule {
   allowedTypes: UserType[];
   allowedRoles?: string[]; 
   submodules?: SubModule[];
+  hideInGrid?: boolean;
 }
 
 export const SYSTEM_MODULES: SystemModule[] = [
   {
+    id: "inicio",
+    label: "Inicio",
+    icon: "🏠",
+    path: "/dashboard",
+    allowedTypes: ["docente", "representante"],
+    hideInGrid: true, 
+  },
+  {
     id: "configuracion",
     label: "Configuración",
     icon: "⚙️",
-    path: "/dashboard/configuracion",
+    path: "/dashboard/configuracion/periodos",
     allowedTypes: ["docente"],
     allowedRoles: ["Administrador"], 
+    submodules: [
+      { id: "conf-periodos", label: "Periodos académicos", path: "/dashboard/configuracion/periodos", icon: "🎓" },
+      { id: "conf-asignaturas", label: "Asignaturas", path: "/dashboard/configuracion/asignaturas", icon: "📘" },
+      { id: "conf-docentes", label: "Docentes", path: "/dashboard/configuracion/docentes", icon: "🧑‍🏫" },
+      { id: "conf-distributivo", label: "Distributivo", path: "/dashboard/configuracion/distributivo", icon: "🏢" },
+      { id: "conf-cursos", label: "Cursos vacíos", path: "/dashboard/configuracion/cursos-vacios", icon: "📦" }
+    ]
   },
   {
     id: "calificaciones",

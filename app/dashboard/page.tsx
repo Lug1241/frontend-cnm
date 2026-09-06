@@ -10,14 +10,10 @@ export default async function DashboardModules() {
   const userType = (typeCookie?.value as UserType) || "representante";
   const userRole = (roleCookie?.value as UserRole);
 
-  // Filtramos los módulos antes de enviar la página al cliente
-  console.log("=== DEBUG MODULOS ===");
-  console.log("Tipo recibido de cookie:", `"${userType}"`);
-  console.log("Rol recibido de cookie:", `"${userRole}"`);
-  console.log("=====================");
   const allowedModules = SYSTEM_MODULES.filter((module) =>
     module.allowedTypes.includes(userType) && (!module.allowedRoles || module.allowedRoles.includes(userRole))
   );
+  const gridModules = allowedModules.filter(module => !module.hideInGrid);
 
  return (
     <div className="flex flex-col w-full p-4 sm:p-8">
@@ -26,7 +22,7 @@ export default async function DashboardModules() {
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center">
-        {allowedModules.map((module) => (
+        {gridModules.map((module) => (
           <Link
             key={module.id}
             href={module.path}
