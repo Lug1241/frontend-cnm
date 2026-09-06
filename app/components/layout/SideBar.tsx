@@ -2,17 +2,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SYSTEM_MODULES, UserType,UserRole } from "@/app/config/menu.config";
+import { SYSTEM_MODULES, UserType, filterModulesByUser, UserRole } from "@/app/config/menu.config";
 
 interface SidebarProps {
   userType: UserType;
-    userRole: UserRole;
+  userRole: UserRole;
 }
 
-export default function Sidebar({ userType }: SidebarProps) {
+export default function Sidebar({ userType, userRole }: SidebarProps) {
   const pathname = usePathname();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-  const allowedModules = SYSTEM_MODULES.filter(m => m.allowedTypes.includes(userType));
+
+  // 1. Ocultar el Sidebar si estamos en la vista de Módulos (inicio)
+  if (pathname === "/dashboard") return null;
+
+  const allowedModules = filterModulesByUser(SYSTEM_MODULES, userType, userRole);
 
   const toggleAccordion = (id: string) => {
     setOpenAccordion(openAccordion === id ? null : id);
@@ -38,13 +42,14 @@ export default function Sidebar({ userType }: SidebarProps) {
                 }`}
               >
                 {!hasSubmodules ? (
-                  <Link href={module.path} className="w-full flex items-center gap-2">
-                    <module.icon className="w-5 h-5 shrink-0" />
+                  <Link href={module.path} className="w-full flex items-center gap-3">
+                    {/* Renderizamos el emoji directamente */}
+                    <span className="text-xl shrink-0">{module.icon}</span>
                     {module.label}
                   </Link>
                 ) : (
-                  <span className="w-full flex items-center gap-2">
-                    <module.icon className="w-5 h-5 shrink-0" />
+                  <span className="w-full flex items-center gap-3">
+                    <span className="text-xl shrink-0">{module.icon}</span>
                     {module.label}
                   </span>
                 )}
@@ -52,9 +57,7 @@ export default function Sidebar({ userType }: SidebarProps) {
                 {hasSubmodules && (
                   <svg 
                     className={`w-4 h-4 transition-transform duration-300 ${openAccordion === module.id ? "rotate-180" : ""}`} 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -73,7 +76,7 @@ export default function Sidebar({ userType }: SidebarProps) {
                       <Link
                         key={sub.id}
                         href={sub.path}
-                        className={`pl-10 pr-3 py-2 rounded-md text-sm transition-colors ${
+                        className={`pl-12 pr-3 py-2 rounded-md text-sm transition-colors ${
                           isSubActive ? "bg-white text-[#00408a] font-bold" : "text-gray-200 hover:bg-white/10"
                         }`}
                       >

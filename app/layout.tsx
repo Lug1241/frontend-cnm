@@ -21,12 +21,14 @@ export default async function RootLayout({
   // Verificamos si existe el token para saber si está autenticado
   const token = cookieStore.get("token")?.value;
   const isAuthenticated = !!token;
+  const userName = cookieStore.get("nombre")?.value || "Usuario";
+  const userRole = cookieStore.get("rol")?.value || cookieStore.get("type")?.value || "Rol";
 
   return (
     <html lang="es">
       <body className={`${inter.className} bg-white min-h-screen flex flex-col`}>
         
-        <Header isAuthenticated={isAuthenticated} />
+        <Header isAuthenticated={isAuthenticated} userName={userName} userRole={userRole} />
         
         <div className="flex flex-col flex-1">
           {children}

@@ -14,7 +14,6 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const router = useRouter();
 
   const handleLogin = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -35,6 +34,7 @@ export default function Login() {
       });
 
       const data = await response.json();
+      const nombreUsuario = `${data.primerNombre || ""} ${data.primerApellido || ""}`.trim();
 
       if (!response.ok) {
         throw new Error(data.message || "Error al verificar credenciales");
@@ -42,12 +42,14 @@ export default function Login() {
 
       document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
       document.cookie = `type=${data.type}; path=/; max-age=86400; SameSite=Strict`;
+      document.cookie = `nombre=${encodeURIComponent(nombreUsuario)}; path=/`;
 
       if (data.rol) {
         document.cookie = `rol=${data.rol}; path=/; max-age=86400; SameSite=Strict`;
       }
 
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
+      
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

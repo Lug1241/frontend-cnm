@@ -2,26 +2,33 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface Usuario {
-  primer_nombre?: string;
-  primer_apellido?: string;
-  rol?: string;
-  tipo?: string;
-}
-
 interface HeaderProps {
-  isAuthenticated?: boolean;
-  usuario?: Usuario | null;
+  isAuthenticated: boolean;
+  userName?: string;
+  userRole?: string;
 }
 
-export default function Header({ isAuthenticated = false, usuario = null }: HeaderProps) {
+export default function Header({ 
+  isAuthenticated = false, 
+  userName = "Usuario", 
+  userRole = "Rol" 
+}: HeaderProps) {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
 
   const handleLogout = () => {
+    // Si usas localStorage como respaldo
     localStorage.removeItem("usuario");
     localStorage.removeItem("token");
-    router.push("/");
+    
+    // Limpiamos las cookies para que el servidor (layout) detecte el cierre de sesión
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "type=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "rol=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "nombre=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    setDropdownOpen(false);
+    window.location.href = "/";
   };
 
   const getCurrentDate = () => {
@@ -31,9 +38,6 @@ export default function Header({ isAuthenticated = false, usuario = null }: Head
       day: "numeric",
     });
   };
-
-  const displayName = usuario ? `${usuario.primer_nombre || ""} ${usuario.primer_apellido || ""}` : "";
-  const displayRole = usuario?.rol === "docente" && usuario?.tipo ? usuario.tipo : usuario?.rol || "";
 
   return (
     <header className="bg-[#00408a] w-full min-h-14 py-2 px-4 sm:px-5 flex justify-center sticky top-0 z-50">
@@ -55,32 +59,44 @@ export default function Header({ isAuthenticated = false, usuario = null }: Head
             {getCurrentDate()}
           </p>
 
+          {/* Menú de Usuario con Dropdown */}
           {isAuthenticated && (
-            <div className="relative inline-block">
+            <div className="relative">
+              {/* Botón Hamburguesa */}
               <button 
                 onClick={() => setDropdownOpen(!isDropdownOpen)}
-                className="text-white text-2xl p-1 hover:scale-110 transition-transform cursor-pointer"
+                className="text-white hover:text-gray-200 focus:outline-none p-1 flex items-center justify-center transition-colors"
+                aria-label="Abrir menú de usuario"
               >
-                ☰
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
               </button>
 
+              {/* Dropdown Box */}
               {isDropdownOpen && (
-                <div className="absolute right-0 top-12 bg-white border border-gray-200 rounded-lg shadow-lg w-60 p-4 flex flex-col gap-4 z-50 animate-in fade-in zoom-in duration-200">
-                  <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-[#00408a] font-bold">
-                      {displayName.charAt(0) || "U"}
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 border border-gray-100">
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+                    {/* Avatar circular con la inicial */}
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-[#00408a] font-bold text-sm">
+                      {userName ? userName.charAt(0).toUpperCase() : "U"}
                     </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-[#00408a] text-sm">{displayName}</span>
-                      <span className="text-gray-500 text-xs capitalize">{displayRole}</span>
+                    {/* Info del usuario */}
+                    <div className="flex flex-col overflow-hidden">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{userName}</p>
+                      <p className="text-xs text-gray-500 capitalize truncate">{userRole}</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={handleLogout}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md transition-colors font-medium text-sm cursor-pointer"
-                  >
-                    Cerrar sesión
-                  </button>
+                  
+                  {/* Botón Cerrar Sesión */}
+                  <div className="px-4 py-2 mt-1">
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full bg-[#ef4444] hover:bg-[#dc2626] text-white text-sm font-medium py-2 rounded-md transition-colors"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
