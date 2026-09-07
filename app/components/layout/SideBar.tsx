@@ -14,23 +14,20 @@ export default function Sidebar({ userType, userRole }: SidebarProps) {
   const pathname = usePathname();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   
-  // 1. Estado para controlar si la barra lateral está colapsada o expandida
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Ocultar el Sidebar si estamos en la vista de Módulos (inicio)
   if (pathname === "/dashboard") return null;
 
   const allowedModules = filterModulesByUser(SYSTEM_MODULES, userType, userRole);
 
   const toggleAccordion = (id: string) => {
-    // Si está colapsado, no abrimos acordeones en línea
     if (isCollapsed) return;
     setOpenAccordion(openAccordion === id ? null : id);
   };
 
   return (
     <aside 
-      className={`bg-[#00408a] min-h-screen text-white flex-shrink-0 shadow-xl transition-all duration-300 ease-in-out hidden md:flex md:flex-col ${
+      className={`bg-[#00408a] min-h-screen text-white shrink-0 shadow-xl transition-all duration-300 ease-in-out hidden md:flex md:flex-col ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
@@ -71,13 +68,13 @@ export default function Sidebar({ userType, userRole }: SidebarProps) {
               >
                 {!hasSubmodules ? (
                   <Link href={module.path} className="w-full flex items-center gap-3">
-                    <span className="text-xl flex-shrink-0">{module.icon}</span>
+                    <span className="text-xl shrink-0">{module.icon}</span>
                     {!isCollapsed && <span className="truncate text-sm">{module.label}</span>}
                   </Link>
                 ) : (
                   <div className="w-full flex items-center justify-between">
                     <span className="flex items-center gap-3">
-                      <span className="text-xl flex-shrink-0">{module.icon}</span>
+                      <span className="text-xl shrink-0">{module.icon}</span>
                       {!isCollapsed && <span className="truncate text-sm">{module.label}</span>}
                     </span>
                   </div>
@@ -111,7 +108,7 @@ export default function Sidebar({ userType, userRole }: SidebarProps) {
                           isSubActive ? "bg-white text-[#00408a] font-bold" : "text-gray-200 hover:bg-white/10"
                         }`}
                       >
-                        {sub.icon && <span className="text-base flex-shrink-0">{sub.icon}</span>}
+                        {sub.icon && <span className="text-base shrink-0">{sub.icon}</span>}
                         <span className="truncate">{sub.label}</span>
                       </Link>
                     );
