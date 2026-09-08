@@ -37,10 +37,11 @@ export const SYSTEM_MODULES: SystemModule[] = [
     icon: "⚙️",
     path: "/dashboard/configuracion/periodos",
     allowedTypes: ["docente"],
-    allowedRoles: ["Administrador"], 
+    allowedRoles: ["Administrador"],
     submodules: [
       { id: "conf-periodos", label: "Periodos académicos", path: "/dashboard/configuracion/periodos", icon: "🎓" },
       { id: "conf-materias", label: "Materias", path: "/dashboard/configuracion/materias", icon: "📘" },
+      { id: "conf-estudiantes", label: "Estudiantes", path: "/dashboard/configuracion/estudiantes", icon: "👥" },
       { id: "conf-docentes", label: "Docentes", path: "/dashboard/configuracion/docentes", icon: "🧑‍🏫" },
       { id: "conf-distributivo", label: "Distributivo", path: "/dashboard/configuracion/distributivo", icon: "🏢" },
       { id: "conf-cursos", label: "Cursos vacíos", path: "/dashboard/configuracion/cursos-vacios", icon: "📦" }

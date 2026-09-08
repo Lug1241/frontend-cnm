@@ -19,7 +19,10 @@ export const NIVELES_MATERIA = [
   "BM BS BCH",
 ] as const;
 
-export const TIPOS_MATERIA = ["Grupal", "Individual"] as const;
+export const TIPOS_MATERIA = [
+  "Grupal",
+  "Individual",
+] as const;
 
 export type NivelMateria = (typeof NIVELES_MATERIA)[number];
 export type TipoMateria = (typeof TIPOS_MATERIA)[number];
