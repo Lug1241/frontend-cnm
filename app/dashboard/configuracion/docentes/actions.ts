@@ -100,7 +100,7 @@ export async function deleteDocente(
             }
         );
 
-        revalidatePath(DOCENTES_PATH);
+        revalidatePath(DOCENTES_PATH, "page");
 
         return { success: true };
     } catch (error: unknown) {

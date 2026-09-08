@@ -162,7 +162,13 @@ export default function DocentesPage({
           item={selectedDocenteToDelete}
           title="¿Eliminar docente?"
           getItemName={(docente) => `${docente.primerNombre} ${docente.primerApellido}`}
-          onDeleteAction={(id) => deleteDocente(String(id))}
+          onDeleteAction={async (id) => {
+            const result = await deleteDocente(String(id));
+            if (result.success) {
+                router.refresh();
+            }
+            return result;
+        }}
           idKey="nroCedula"
         />
       )}
