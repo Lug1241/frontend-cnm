@@ -22,7 +22,6 @@ export async function createMateria(
       nombre: formData.get("nombre") as string,
       nivel: formData.get("nivel") as string,
       tipo: formData.get("tipo") as string,
-      observaciones: formData.get("observaciones") as string,
       edadMin: Number(formData.get("edadMin")),
     };
 
@@ -51,7 +50,6 @@ export async function updateMateria(
       nombre: formData.get("nombre") as string,
       nivel: formData.get("nivel") as string,
       tipo: formData.get("tipo") as string,
-      observaciones: formData.get("observaciones") as string,
       edadMin: Number(formData.get("edadMin")),
     };
 

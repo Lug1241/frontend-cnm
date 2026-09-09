@@ -41,6 +41,9 @@ export const SYSTEM_MODULES: SystemModule[] = [
     submodules: [
       { id: "conf-periodos", label: "Periodos académicos", path: "/dashboard/configuracion/periodos", icon: "🎓" },
       { id: "conf-materias", label: "Materias", path: "/dashboard/configuracion/materias", icon: "📘" },
+      { id: "conf-representantes", label: "Representantes", path: "/dashboard/configuracion/representantes", icon: "👤" },
+      { id: "conf-estudiantes", label: "Estudiantes", path: "/dashboard/configuracion/estudiantes", icon: "🎓" },
+      { id: "conf-registro-estudiante", label: "Registrar estudiante", path: "/dashboard/configuracion/estudiantes/nuevo", icon: "➕" },
       { id: "conf-docentes", label: "Docentes", path: "/dashboard/configuracion/docentes", icon: "🧑‍🏫" },
       { id: "conf-distributivo", label: "Distributivo", path: "/dashboard/configuracion/distributivo", icon: "🏢" },
       { id: "conf-cursos", label: "Cursos vacíos", path: "/dashboard/configuracion/cursos-vacios", icon: "📦" }
@@ -49,7 +52,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
   {
     id: "calificaciones",
     label: "Calificaciones",
-    icon: "📊", 
+    icon: "📊",
     path: "/dashboard/calificaciones",
     allowedTypes: ["docente", "representante"],
   },
@@ -74,15 +77,6 @@ export const SYSTEM_MODULES: SystemModule[] = [
     path: "/dashboard/matriculacion/grupales",
     allowedTypes: ["docente", "representante"],
   },
-  
-  {
-    id: "estudiantil",
-    label: "Estudiantil",
-    icon: "👥",
-    path: "/dashboard/estudiantil",
-    allowedTypes: ["docente"],
-    allowedRoles: ["Administrador", "Secretaria", "Inspector", "Vicerrector"], 
-  }
 ];
 
 // Función utilitaria para filtrar módulos y submódulos según type y rol
