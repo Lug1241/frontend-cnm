@@ -39,7 +39,9 @@ export default function EstudiantesPage({
   const [searchValue, setSearchValue] = useState(initialSearch);
   const [toEdit, setToEdit] = useState<Estudiante | null>(null);
   const [toDelete, setToDelete] = useState<Estudiante | null>(null);
-  const [representante, setRepresentante] = useState<Representante | null>(null);
+  const [representante, setRepresentante] = useState<Representante | null>(
+    null,
+  );
   const [detailError, setDetailError] = useState<string>();
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
@@ -63,8 +65,14 @@ export default function EstudiantesPage({
 
   const columns: ColumnDef<Estudiante>[] = [
     { header: "Cédula/Pasaporte", accessorKey: "nroCedula" },
-    { header: "Nombre", cell: (item) => `${item.primerNombre} ${item.segundoNombre}` },
-    { header: "Apellido", cell: (item) => `${item.primerApellido} ${item.segundoApellido}` },
+    {
+      header: "Nombre",
+      cell: (item) => `${item.primerNombre} ${item.segundoNombre}`,
+    },
+    {
+      header: "Apellido",
+      cell: (item) => `${item.primerApellido} ${item.segundoApellido}`,
+    },
     { header: "Jornada", accessorKey: "jornada" },
     { header: "Especialidad", accessorKey: "especialidad" },
     { header: "Nivel", accessorKey: "nivel" },
@@ -101,7 +109,9 @@ export default function EstudiantesPage({
   return (
     <div className="space-y-6">
       {errorMsg && (
-        <div className="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 sm:m-6 lg:m-8 lg:mb-0">⚠️ {errorMsg}</div>
+        <div className="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 sm:m-6 lg:m-8 lg:mb-0">
+          ⚠️ {errorMsg}
+        </div>
       )}
       <div className={isNavigating ? "pointer-events-none opacity-70" : ""}>
         <DataTable
@@ -110,14 +120,22 @@ export default function EstudiantesPage({
           data={initialEstudiantes}
           columns={columns}
           addLabel="Registrar estudiante"
-          onAdd={() => router.push("/dashboard/configuracion/estudiantes/nuevo")}
+          onAdd={() =>
+            router.push("/dashboard/estudiantil/registro-estudiantes")
+          }
           searchValue={searchValue}
           onSearchChange={setSearchValue}
           searchPlaceholder="Buscar por nombre o cédula..."
           onEdit={setToEdit}
           onDelete={setToDelete}
           renderActions={(item) => (
-            <button type="button" onClick={() => showRepresentative(item)} title="Ver representante" aria-label={`Ver representante de ${item.primerNombre}`} className="text-emerald-600 transition-colors hover:text-emerald-800">
+            <button
+              type="button"
+              onClick={() => showRepresentative(item)}
+              title="Ver representante"
+              aria-label={`Ver representante de ${item.primerNombre}`}
+              className="text-emerald-600 transition-colors hover:text-emerald-800"
+            >
               <MdOutlineVisibility className="h-5 w-5" />
             </button>
           )}
@@ -145,7 +163,12 @@ export default function EstudiantesPage({
           idKey="nroCedula"
         />
       )}
-      <RepresentanteDetailModal representante={representante} error={detailError} loading={isDetailLoading} onClose={closeDetail} />
+      <RepresentanteDetailModal
+        representante={representante}
+        error={detailError}
+        loading={isDetailLoading}
+        onClose={closeDetail}
+      />
     </div>
   );
 }

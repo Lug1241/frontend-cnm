@@ -3,7 +3,7 @@
 import { fetchAPI } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 
-const REPRESENTANTES_PATH = "/dashboard/configuracion/representantes";
+const REPRESENTANTES_PATH = "/dashboard/estudiantil/representantes";
 
 export interface RepresentanteActionResult {
   success: boolean;
@@ -55,12 +55,12 @@ export async function updateRepresentante(
       ...representanteFromFormData(formData),
       nroCedula: undefined,
     };
-    await fetchAPI(
-      `/representantes/editar/${encodeURIComponent(nroCedula)}`,
-      { method: "PUT", body: JSON.stringify(requestData) },
-    );
+    await fetchAPI(`/representantes/editar/${encodeURIComponent(nroCedula)}`, {
+      method: "PUT",
+      body: JSON.stringify(requestData),
+    });
     revalidatePath(REPRESENTANTES_PATH);
-    revalidatePath("/dashboard/configuracion/estudiantes");
+    revalidatePath("/dashboard/estudiantil/estudiantes");
     return { success: true };
   } catch (error: unknown) {
     return {

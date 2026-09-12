@@ -4,7 +4,7 @@ import { fetchAPI } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { type Representante } from "@/types/Representante";
 
-const ESTUDIANTES_PATH = "/dashboard/configuracion/estudiantes";
+const ESTUDIANTES_PATH = "/dashboard/estudiantil/estudiantes";
 
 export interface EstudianteActionResult {
   success: boolean;
@@ -71,13 +71,10 @@ export async function updateEstudiante(
   formData: FormData,
 ): Promise<EstudianteActionResult> {
   try {
-    await fetchAPI(
-      `/estudiantes/editar/${encodeURIComponent(currentCedula)}`,
-      {
-        method: "PUT",
-        body: JSON.stringify(estudianteFromFormData(formData)),
-      },
-    );
+    await fetchAPI(`/estudiantes/editar/${encodeURIComponent(currentCedula)}`, {
+      method: "PUT",
+      body: JSON.stringify(estudianteFromFormData(formData)),
+    });
     revalidatePath(ESTUDIANTES_PATH);
     return { success: true };
   } catch (error: unknown) {

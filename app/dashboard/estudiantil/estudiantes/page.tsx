@@ -1,13 +1,14 @@
 import { fetchAPI } from "@/lib/api";
+import { type Estudiante } from "@/types/Estudiante";
 import { type Representante } from "@/types/Representante";
 import { redirect } from "next/navigation";
-import RepresentantesPage from "./RepresentantesPage";
+import EstudiantesPage from "./EstudiantesPage";
 
 const PAGE_SIZE = 10;
-const REPRESENTANTES_PATH = "/dashboard/configuracion/representantes";
+const ESTUDIANTES_PATH = "/dashboard/estudiantil/estudiantes";
 
-interface RepresentantesResponse {
-  data: Representante[];
+interface Paginated<T> {
+  data: T[];
   totalPages: number;
   currentPage: number;
   totalRows: number;
@@ -18,7 +19,7 @@ function parsePage(value?: string) {
   return Number.isSafeInteger(page) && page > 0 ? page : 1;
 }
 
-export default async function RepresentantesRoute({
+export default async function EstudiantesRoute({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string; q?: string }>;
@@ -32,49 +33,56 @@ export default async function RepresentantesRoute({
   });
   if (search) query.set("search", search);
 
-  let response: RepresentantesResponse = {
+  let students: Paginated<Estudiante> = {
     data: [],
     totalPages: 0,
     currentPage: requestedPage,
     totalRows: 0,
   };
+  let representantes: Representante[] = [];
   let errorMsg = "";
 
   try {
-    response = await fetchAPI<RepresentantesResponse>(
-      `/representantes/obtener?${query.toString()}`,
-    );
+    const [studentResponse, representativeResponse] = await Promise.all([
+      fetchAPI<Paginated<Estudiante>>(
+        `/estudiantes/obtener?${query.toString()}`,
+      ),
+      fetchAPI<Paginated<Representante>>(
+        "/representantes/obtener?page=1&limit=1000",
+      ),
+    ]);
+    students = studentResponse;
+    representantes = representativeResponse.data ?? [];
   } catch (error: unknown) {
     errorMsg =
       error instanceof Error
         ? error.message
-        : "No se pudo cargar la lista de representantes.";
+        : "No se pudo cargar la información de estudiantes.";
   }
 
   if (
     !errorMsg &&
-    response.totalPages > 0 &&
-    requestedPage > response.totalPages
+    students.totalPages > 0 &&
+    requestedPage > students.totalPages
   ) {
     const redirectParams = new URLSearchParams();
-    if (response.totalPages > 1) {
-      redirectParams.set("page", String(response.totalPages));
+    if (students.totalPages > 1) {
+      redirectParams.set("page", String(students.totalPages));
     }
     if (search) redirectParams.set("q", search);
     const queryString = redirectParams.toString();
     redirect(
-      queryString
-        ? `${REPRESENTANTES_PATH}?${queryString}`
-        : REPRESENTANTES_PATH,
+      queryString ? `${ESTUDIANTES_PATH}?${queryString}` : ESTUDIANTES_PATH,
     );
   }
 
   return (
-    <RepresentantesPage
-      initialRepresentantes={response.data ?? []}
+    <EstudiantesPage
+      initialEstudiantes={students.data ?? []}
+      representantes={representantes}
       initialSearch={search}
-      currentPage={response.currentPage || requestedPage}
-      totalPages={response.totalPages || 0}
+      currentPage={students.currentPage || requestedPage}
+      totalPages={students.totalPages || 0}
       errorMsg={errorMsg}
     />
   );
