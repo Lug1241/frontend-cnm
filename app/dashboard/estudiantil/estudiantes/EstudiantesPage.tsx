@@ -2,18 +2,22 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MdOutlineVisibility } from "react-icons/md";
+import { MdClose, MdOutlineVisibility } from "react-icons/md";
 import DataTable, { type ColumnDef } from "@/app/components/ui/DataTable";
 import DeleteModal from "@/app/components/ui/DeleteModal";
 import { type Estudiante } from "@/types/Estudiante";
 import { type Representante } from "@/types/Representante";
+import RepresentanteModal from "../representantes/RepresentanteModal";
+import { updateRepresentante } from "../representantes/actions";
+import EstudianteDetailPanel from "./EstudianteDetailPanel";
 import EstudianteModal from "./EstudianteModal";
-import RepresentanteDetailModal from "./RepresentanteDetailModal";
 import {
   deleteEstudiante,
   getRepresentanteDetail,
   updateEstudiante,
 } from "./actions";
+
+type ActiveTab = "students" | "detail";
 
 interface EstudiantesPageProps {
   initialEstudiantes: Estudiante[];
@@ -37,7 +41,13 @@ export default function EstudiantesPage({
   const searchParams = useSearchParams();
   const [isNavigating, startNavigation] = useTransition();
   const [searchValue, setSearchValue] = useState(initialSearch);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("students");
+  const [selectedStudent, setSelectedStudent] = useState<Estudiante | null>(
+    null,
+  );
   const [toEdit, setToEdit] = useState<Estudiante | null>(null);
+  const [representativeToEdit, setRepresentativeToEdit] =
+    useState<Representante | null>(null);
   const [toDelete, setToDelete] = useState<Estudiante | null>(null);
   const [representante, setRepresentante] = useState<Representante | null>(
     null,
@@ -90,7 +100,7 @@ export default function EstudiantesPage({
     });
   };
 
-  const showRepresentative = async (student: Estudiante) => {
+  const loadRepresentative = async (student: Estudiante) => {
     setRepresentante(null);
     setDetailError(undefined);
     setIsDetailLoading(true);
@@ -100,50 +110,123 @@ export default function EstudiantesPage({
     else setDetailError(result.error);
   };
 
-  const closeDetail = () => {
+  const showStudentDetails = (student: Estudiante) => {
+    setSelectedStudent(student);
+    setActiveTab("detail");
+    void loadRepresentative(student);
+  };
+
+  const closeStudentDetails = () => {
+    setActiveTab("students");
+    setSelectedStudent(null);
     setRepresentante(null);
     setDetailError(undefined);
     setIsDetailLoading(false);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-full bg-white">
+      <div
+        className="flex min-h-12 items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-4 pt-3 sm:px-6 lg:px-8"
+        role="tablist"
+        aria-label="Vistas de estudiantes"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "students"}
+          onClick={() => setActiveTab("students")}
+          className={`rounded-t-md border px-5 py-2.5 text-sm font-semibold transition-colors ${
+            activeTab === "students"
+              ? "border-blue-600 bg-blue-600 text-white"
+              : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
+          }`}
+        >
+          Estudiantes
+        </button>
+        {selectedStudent && (
+          <div
+            className={`flex items-center rounded-t-md border text-sm font-semibold ${
+              activeTab === "detail"
+                ? "border-blue-600 bg-blue-600 text-white"
+                : "border-gray-200 bg-white text-gray-700"
+            }`}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "detail"}
+              onClick={() => setActiveTab("detail")}
+              className="px-4 py-2.5"
+            >
+              {selectedStudent.primerNombre} {selectedStudent.primerApellido}
+            </button>
+            <button
+              type="button"
+              onClick={closeStudentDetails}
+              className="mr-2 rounded p-1 hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-white"
+              title="Cerrar pestaña"
+              aria-label={`Cerrar información de ${selectedStudent.primerNombre} ${selectedStudent.primerApellido}`}
+            >
+              <MdClose className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
       {errorMsg && (
         <div className="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 sm:m-6 lg:m-8 lg:mb-0">
           ⚠️ {errorMsg}
         </div>
       )}
-      <div className={isNavigating ? "pointer-events-none opacity-70" : ""}>
-        <DataTable
-          title="Estudiantes"
-          description="Consulta y administra la información relevante de los estudiantes."
-          data={initialEstudiantes}
-          columns={columns}
-          addLabel="Registrar estudiante"
-          onAdd={() =>
-            router.push("/dashboard/estudiantil/registro-estudiantes")
-          }
-          searchValue={searchValue}
-          onSearchChange={setSearchValue}
-          searchPlaceholder="Buscar por nombre o cédula..."
-          onEdit={setToEdit}
-          onDelete={setToDelete}
-          renderActions={(item) => (
-            <button
-              type="button"
-              onClick={() => showRepresentative(item)}
-              title="Ver representante"
-              aria-label={`Ver representante de ${item.primerNombre}`}
-              className="text-emerald-600 transition-colors hover:text-emerald-800"
-            >
-              <MdOutlineVisibility className="h-5 w-5" />
-            </button>
-          )}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={changePage}
+
+      {activeTab === "students" && (
+        <div className={isNavigating ? "pointer-events-none opacity-70" : ""}>
+          <DataTable
+            title="Estudiantes"
+            description="Consulta y administra la información relevante de los estudiantes."
+            data={initialEstudiantes}
+            columns={columns}
+            addLabel="Registrar estudiante"
+            onAdd={() =>
+              router.push("/dashboard/estudiantil/registro-estudiantes")
+            }
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            searchPlaceholder="Buscar por nombre o cédula..."
+            onEdit={setToEdit}
+            onDelete={setToDelete}
+            renderActions={(item) => (
+              <button
+                type="button"
+                onClick={() => showStudentDetails(item)}
+                title="Ver información"
+                aria-label={`Ver información de ${item.primerNombre} ${item.primerApellido}`}
+                className="text-emerald-600 transition-colors hover:text-emerald-800"
+              >
+                <MdOutlineVisibility className="h-5 w-5" />
+              </button>
+            )}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={changePage}
+          />
+        </div>
+      )}
+
+      {activeTab === "detail" && selectedStudent && (
+        <EstudianteDetailPanel
+          estudiante={selectedStudent}
+          representante={representante}
+          representativeError={detailError}
+          representativeLoading={isDetailLoading}
+          onEditStudent={() => setToEdit(selectedStudent)}
+          onEditRepresentative={() => {
+            if (representante) setRepresentativeToEdit(representante);
+          }}
         />
-      </div>
+      )}
+
       <EstudianteModal
         estudiante={toEdit}
         representantes={representantes}
@@ -152,6 +235,26 @@ export default function EstudiantesPage({
           updateEstudiante(toEdit?.nroCedula ?? "", formData)
         }
       />
+
+      <RepresentanteModal
+        isOpen={Boolean(representativeToEdit)}
+        representanteToEdit={representativeToEdit}
+        onClose={() => setRepresentativeToEdit(null)}
+        onSaveAction={async (cedula, formData) => {
+          if (!cedula) {
+            return {
+              success: false,
+              error: "No se identificó al representante.",
+            };
+          }
+          const result = await updateRepresentante(cedula, formData);
+          if (result.success && selectedStudent) {
+            await loadRepresentative(selectedStudent);
+          }
+          return result;
+        }}
+      />
+
       {toDelete && (
         <DeleteModal
           isOpen
@@ -163,12 +266,6 @@ export default function EstudiantesPage({
           idKey="nroCedula"
         />
       )}
-      <RepresentanteDetailModal
-        representante={representante}
-        error={detailError}
-        loading={isDetailLoading}
-        onClose={closeDetail}
-      />
     </div>
   );
 }
