@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MdClose, MdOutlineVisibility } from "react-icons/md";
+import { MdClose, MdDownload, MdOutlineVisibility } from "react-icons/md";
 import DataTable, { type ColumnDef } from "@/app/components/ui/DataTable";
 import DeleteModal from "@/app/components/ui/DeleteModal";
 import { NIVELES_ESTUDIANTE, type Estudiante } from "@/types/Estudiante";
 import { type Representante } from "@/types/Representante";
 import RepresentanteModal from "../representantes/RepresentanteModal";
 import { updateRepresentante } from "../representantes/actions";
+import DownloadFilesModal from "./DownloadFilesModal";
 import EstudianteDetailPanel from "./EstudianteDetailPanel";
 import EstudianteModal from "./EstudianteModal";
 import {
@@ -51,6 +52,7 @@ export default function EstudiantesPage({
   const [representativeToEdit, setRepresentativeToEdit] =
     useState<Representante | null>(null);
   const [toDelete, setToDelete] = useState<Estudiante | null>(null);
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [representante, setRepresentante] = useState<Representante | null>(
     null,
   );
@@ -210,19 +212,29 @@ export default function EstudiantesPage({
             onSearchChange={setSearchValue}
             searchPlaceholder="Buscar por nombre o cédula..."
             customFilters={
-              <select
-                value={initialLevel}
-                onChange={(event) => changeLevel(event.target.value)}
-                aria-label="Filtrar estudiantes por nivel"
-                className="order-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00408a] sm:w-64"
-              >
-                <option value="">Todos los niveles</option>
-                {NIVELES_ESTUDIANTE.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
+              <>
+                <select
+                  value={initialLevel}
+                  onChange={(event) => changeLevel(event.target.value)}
+                  aria-label="Filtrar estudiantes por nivel"
+                  className="order-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00408a] sm:w-64"
+                >
+                  <option value="">Todos los niveles</option>
+                  {NIVELES_ESTUDIANTE.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setIsDownloadOpen(true)}
+                  className="order-3 flex w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 sm:w-auto"
+                >
+                  <MdDownload className="h-5 w-5" />
+                  Descargar archivos
+                </button>
+              </>
             }
             onEdit={setToEdit}
             onDelete={setToDelete}
@@ -284,6 +296,13 @@ export default function EstudiantesPage({
           return result;
         }}
       />
+
+      {isDownloadOpen && (
+        <DownloadFilesModal
+          initialLevel={initialLevel}
+          onClose={() => setIsDownloadOpen(false)}
+        />
+      )}
 
       {toDelete && (
         <DeleteModal
