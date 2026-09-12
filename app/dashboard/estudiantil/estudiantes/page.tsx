@@ -1,5 +1,5 @@
 import { fetchAPI } from "@/lib/api";
-import { type Estudiante } from "@/types/Estudiante";
+import { NIVELES_ESTUDIANTE, type Estudiante } from "@/types/Estudiante";
 import { type Representante } from "@/types/Representante";
 import { redirect } from "next/navigation";
 import EstudiantesPage from "./EstudiantesPage";
@@ -22,16 +22,22 @@ function parsePage(value?: string) {
 export default async function EstudiantesRoute({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; nivel?: string }>;
 }) {
   const params = await searchParams;
   const requestedPage = parsePage(params.page);
   const search = params.q?.trim() ?? "";
+  const level = NIVELES_ESTUDIANTE.includes(
+    params.nivel as (typeof NIVELES_ESTUDIANTE)[number],
+  )
+    ? (params.nivel ?? "")
+    : "";
   const query = new URLSearchParams({
     page: String(requestedPage),
     limit: String(PAGE_SIZE),
   });
   if (search) query.set("search", search);
+  if (level) query.set("nivel", level);
 
   let students: Paginated<Estudiante> = {
     data: [],
@@ -70,6 +76,7 @@ export default async function EstudiantesRoute({
       redirectParams.set("page", String(students.totalPages));
     }
     if (search) redirectParams.set("q", search);
+    if (level) redirectParams.set("nivel", level);
     const queryString = redirectParams.toString();
     redirect(
       queryString ? `${ESTUDIANTES_PATH}?${queryString}` : ESTUDIANTES_PATH,
@@ -81,6 +88,7 @@ export default async function EstudiantesRoute({
       initialEstudiantes={students.data ?? []}
       representantes={representantes}
       initialSearch={search}
+      initialLevel={level}
       currentPage={students.currentPage || requestedPage}
       totalPages={students.totalPages || 0}
       errorMsg={errorMsg}

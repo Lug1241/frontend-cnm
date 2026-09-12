@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MdClose, MdOutlineVisibility } from "react-icons/md";
 import DataTable, { type ColumnDef } from "@/app/components/ui/DataTable";
 import DeleteModal from "@/app/components/ui/DeleteModal";
-import { type Estudiante } from "@/types/Estudiante";
+import { NIVELES_ESTUDIANTE, type Estudiante } from "@/types/Estudiante";
 import { type Representante } from "@/types/Representante";
 import RepresentanteModal from "../representantes/RepresentanteModal";
 import { updateRepresentante } from "../representantes/actions";
@@ -23,6 +23,7 @@ interface EstudiantesPageProps {
   initialEstudiantes: Estudiante[];
   representantes: Representante[];
   initialSearch: string;
+  initialLevel: string;
   currentPage: number;
   totalPages: number;
   errorMsg: string;
@@ -32,6 +33,7 @@ export default function EstudiantesPage({
   initialEstudiantes,
   representantes,
   initialSearch,
+  initialLevel,
   currentPage,
   totalPages,
   errorMsg,
@@ -87,6 +89,19 @@ export default function EstudiantesPage({
     { header: "Especialidad", accessorKey: "especialidad" },
     { header: "Nivel", accessorKey: "nivel" },
   ];
+
+  const changeLevel = (level: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (level) params.set("nivel", level);
+    else params.delete("nivel");
+    params.delete("page");
+    const query = params.toString();
+    startNavigation(() => {
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    });
+  };
 
   const changePage = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -194,6 +209,21 @@ export default function EstudiantesPage({
             searchValue={searchValue}
             onSearchChange={setSearchValue}
             searchPlaceholder="Buscar por nombre o cédula..."
+            customFilters={
+              <select
+                value={initialLevel}
+                onChange={(event) => changeLevel(event.target.value)}
+                aria-label="Filtrar estudiantes por nivel"
+                className="order-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00408a] sm:w-64"
+              >
+                <option value="">Todos los niveles</option>
+                {NIVELES_ESTUDIANTE.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            }
             onEdit={setToEdit}
             onDelete={setToDelete}
             renderActions={(item) => (
