@@ -9,7 +9,6 @@ interface EstudianteDetailPanelProps {
   representante: Representante | null;
   representativeError?: string;
   representativeLoading: boolean;
-  onEditStudent: () => void;
   onEditRepresentative: () => void;
 }
 
@@ -21,21 +20,23 @@ function DetailSection({
 }: {
   title: string;
   rows: [string, React.ReactNode][];
-  onEdit: () => void;
-  editLabel: string;
+  onEdit?: () => void;
+  editLabel?: string;
 }) {
   return (
     <section className="overflow-hidden rounded-lg border border-gray-200 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-5 py-4">
         <h3 className="text-lg font-bold text-[#00408a]">{title}</h3>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <MdOutlineEdit className="h-5 w-5" />
-          {editLabel}
-        </button>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <MdOutlineEdit className="h-5 w-5" />
+            {editLabel}
+          </button>
+        )}
       </div>
       <dl className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
         {rows.map(([label, value]) => (
@@ -61,7 +62,6 @@ export default function EstudianteDetailPanel({
   representante,
   representativeError,
   representativeLoading,
-  onEditStudent,
   onEditRepresentative,
 }: EstudianteDetailPanelProps) {
   const studentRows: [string, React.ReactNode][] = [
@@ -105,12 +105,7 @@ export default function EstudianteDetailPanel({
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <DetailSection
-        title="Información del estudiante"
-        rows={studentRows}
-        onEdit={onEditStudent}
-        editLabel="Editar estudiante"
-      />
+      <DetailSection title="Información del estudiante" rows={studentRows} />
 
       {representativeLoading && (
         <section className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">

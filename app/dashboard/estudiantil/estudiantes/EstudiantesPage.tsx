@@ -262,7 +262,6 @@ export default function EstudiantesPage({
           representante={representante}
           representativeError={detailError}
           representativeLoading={isDetailLoading}
-          onEditStudent={() => setToEdit(selectedStudent)}
           onEditRepresentative={() => {
             if (representante) setRepresentativeToEdit(representante);
           }}
