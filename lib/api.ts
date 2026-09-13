@@ -39,9 +39,18 @@ export async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): 
     if (response.status === 401) {
       throw new Error("UNAUTHORIZED");
     }
-    const errorData = await response.json().catch(() => ({}));
+    const errorData = (await response.json().catch(() => ({}))) as {
+      message?: unknown;
+    };
     console.error("🔥 RESPUESTA DE ERROR DEL BACKEND:", JSON.stringify(errorData, null, 2));
-    throw new Error(errorData.message || `Error ${response.status}: Error interno del servidor`);
+    const backendMessage = Array.isArray(errorData.message)
+      ? errorData.message.filter((message): message is string => typeof message === "string").join(". ")
+      : typeof errorData.message === "string"
+        ? errorData.message
+        : null;
+    throw new Error(
+      backendMessage || `Error ${response.status}: Error interno del servidor`,
+    );
   }
 
   if (response.status === 204) {

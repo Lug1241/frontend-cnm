@@ -87,10 +87,6 @@ export default function MateriasPage({
         materia.tipo.charAt(0).toUpperCase() + materia.tipo.slice(1),
     },
     { header: "Edad mínima", accessorKey: "edadMin" },
-    {
-      header: "Observaciones",
-      cell: (materia) => materia.observaciones || "—",
-    },
   ];
 
   return (
