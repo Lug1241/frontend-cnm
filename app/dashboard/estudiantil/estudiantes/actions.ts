@@ -19,42 +19,13 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
-function nullableString(formData: FormData, name: string) {
-  const value = String(formData.get(name) ?? "").trim();
-  return value || null;
-}
-
-function estudianteFromFormData(formData: FormData) {
-  return {
-    nroCedula: String(formData.get("nroCedula") ?? "").trim(),
-    primerNombre: String(formData.get("primerNombre") ?? "").trim(),
-    segundoNombre: String(formData.get("segundoNombre") ?? "").trim(),
-    primerApellido: String(formData.get("primerApellido") ?? "").trim(),
-    segundoApellido: String(formData.get("segundoApellido") ?? "").trim(),
-    cedulaPdf: nullableString(formData, "cedulaPdf"),
-    genero: String(formData.get("genero") ?? ""),
-    anioMatricula: Number(formData.get("anioMatricula")),
-    jornada: String(formData.get("jornada") ?? ""),
-    fechaNacimiento: String(formData.get("fechaNacimiento") ?? ""),
-    grupoEtnico: String(formData.get("grupoEtnico") ?? ""),
-    especialidad: String(formData.get("especialidad") ?? "").trim(),
-    nroMatricula: Number(formData.get("nroMatricula")),
-    nacionalidad: String(formData.get("nacionalidad") ?? "").trim(),
-    ier: String(formData.get("ier") ?? "").trim(),
-    matriculaIerPdf: nullableString(formData, "matriculaIerPdf"),
-    direccion: String(formData.get("direccion") ?? "").trim(),
-    nivel: String(formData.get("nivel") ?? ""),
-    ID_representante: Number(formData.get("representanteId")),
-  };
-}
-
 export async function createEstudiante(
   formData: FormData,
 ): Promise<EstudianteActionResult> {
   try {
     await fetchAPI("/estudiantes/crear", {
       method: "POST",
-      body: JSON.stringify(estudianteFromFormData(formData)),
+      body: formData,
     });
     revalidatePath(ESTUDIANTES_PATH);
     return { success: true };
@@ -73,7 +44,7 @@ export async function updateEstudiante(
   try {
     await fetchAPI(`/estudiantes/editar/${encodeURIComponent(currentCedula)}`, {
       method: "PUT",
-      body: JSON.stringify(estudianteFromFormData(formData)),
+      body: formData,
     });
     revalidatePath(ESTUDIANTES_PATH);
     return { success: true };

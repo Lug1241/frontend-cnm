@@ -2,20 +2,21 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-
-export async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function fetchAPI<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   const headers = new Headers(options.headers);
-  
-  if (!headers.has("Content-Type")) {
+
+  if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
-
 
   const url = `${API_URL}${endpoint}`;
   let response;
@@ -31,7 +32,7 @@ export async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): 
     console.error("Mensaje general:", (error as Error).message);
     console.error("Causa real (Node cause):", (error as Error).cause);
     console.error("=========================================");
-    
+
     throw new Error("El servidor de Next.js falló al conectar");
   }
 
@@ -42,9 +43,14 @@ export async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): 
     const errorData = (await response.json().catch(() => ({}))) as {
       message?: unknown;
     };
-    console.error("🔥 RESPUESTA DE ERROR DEL BACKEND:", JSON.stringify(errorData, null, 2));
+    console.error(
+      "🔥 RESPUESTA DE ERROR DEL BACKEND:",
+      JSON.stringify(errorData, null, 2),
+    );
     const backendMessage = Array.isArray(errorData.message)
-      ? errorData.message.filter((message): message is string => typeof message === "string").join(". ")
+      ? errorData.message
+          .filter((message): message is string => typeof message === "string")
+          .join(". ")
       : typeof errorData.message === "string"
         ? errorData.message
         : null;

@@ -14,27 +14,13 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
-function representanteFromFormData(formData: FormData) {
-  return {
-    nroCedula: String(formData.get("nroCedula") ?? "").trim(),
-    primerNombre: String(formData.get("primerNombre") ?? "").trim(),
-    segundoNombre: String(formData.get("segundoNombre") ?? "").trim(),
-    primerApellido: String(formData.get("primerApellido") ?? "").trim(),
-    segundoApellido: String(formData.get("segundoApellido") ?? "").trim(),
-    celular: String(formData.get("celular") ?? "").trim(),
-    email: String(formData.get("email") ?? "").trim(),
-    convencional: String(formData.get("convencional") ?? "").trim(),
-    emergencia: String(formData.get("emergencia") ?? "").trim(),
-  };
-}
-
 export async function createRepresentante(
   formData: FormData,
 ): Promise<RepresentanteActionResult> {
   try {
     await fetchAPI("/representantes/crear", {
       method: "POST",
-      body: JSON.stringify(representanteFromFormData(formData)),
+      body: formData,
     });
     revalidatePath(REPRESENTANTES_PATH);
     return { success: true };
@@ -51,13 +37,9 @@ export async function updateRepresentante(
   formData: FormData,
 ): Promise<RepresentanteActionResult> {
   try {
-    const requestData = {
-      ...representanteFromFormData(formData),
-      nroCedula: undefined,
-    };
     await fetchAPI(`/representantes/editar/${encodeURIComponent(nroCedula)}`, {
       method: "PUT",
-      body: JSON.stringify(requestData),
+      body: formData,
     });
     revalidatePath(REPRESENTANTES_PATH);
     revalidatePath("/dashboard/estudiantil/estudiantes");

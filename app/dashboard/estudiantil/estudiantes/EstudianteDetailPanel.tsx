@@ -3,6 +3,7 @@
 import { MdOutlineEdit } from "react-icons/md";
 import { type Estudiante } from "@/types/Estudiante";
 import { type Representante } from "@/types/Representante";
+import { ArchivoPdfLink } from "@/app/components/ui/ArchivoPdf";
 
 interface EstudianteDetailPanelProps {
   estudiante: Estudiante;
@@ -79,8 +80,11 @@ export default function EstudianteDetailPanel({
     ["Institución educativa", estudiante.ier],
     ["Año de matrícula", estudiante.anioMatricula],
     ["Nro. matrícula", estudiante.nroMatricula],
-    ["Cédula PDF", estudiante.cedulaPdf],
-    ["Matrícula IER PDF", estudiante.matriculaIerPdf],
+    ["Cédula PDF", <ArchivoPdfLink key="cedula" ruta={estudiante.cedulaPdf} />],
+    [
+      "Matrícula IER PDF",
+      <ArchivoPdfLink key="matricula" ruta={estudiante.matriculaIerPdf} />,
+    ],
   ];
 
   const representativeRows: [string, React.ReactNode][] = representante
@@ -98,8 +102,17 @@ export default function EstudianteDetailPanel({
         ["Celular", representante.celular],
         ["Convencional", representante.convencional],
         ["Emergencia", representante.emergencia],
-        ["Cédula PDF", representante.cedulaPdf],
-        ["Croquis PDF", representante.croquisPdf],
+        [
+          "Cédula PDF",
+          <ArchivoPdfLink
+            key="cedula-representante"
+            ruta={representante.cedulaPdf}
+          />,
+        ],
+        [
+          "Croquis PDF",
+          <ArchivoPdfLink key="croquis" ruta={representante.croquisPdf} />,
+        ],
       ]
     : [];
 
