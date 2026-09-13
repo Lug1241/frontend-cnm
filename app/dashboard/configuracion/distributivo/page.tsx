@@ -1,5 +1,8 @@
 import { fetchAPI } from "@/lib/api";
-import DistributivoClient from "./DistributivoClient";
+import DistributivoClient from "./DistributivoPage";
+import { redirect } from "next/navigation";
+
+const PAGE_SIZE = 10;
 
 export interface Asignacion {
   id?: number;
@@ -8,11 +11,11 @@ export interface Asignacion {
   horaFin: string;
   cupos: number;
   dias: string[];
-  materia: {
+  materia?: {
     nombre: string;
     nivel: string;
   };
-  docente: {
+  docente?: {
     primerNombre: string;
     primerApellido: string;
   };
@@ -23,99 +26,96 @@ export interface Periodo {
   descripcion: string;
 }
 
+interface DistributivoResponsePaginated {
+  data: Asignacion[];
+  totalPages: number;
+  currentPage: number;
+  totalRows: number;
+}
+
+function parsePage(value?: string) {
+  const page = Number(value);
+  return Number.isSafeInteger(page) && page > 0 ? page : 1;
+}
+
 export default async function DistributivoPage({
   searchParams,
 }: {
   searchParams: Promise<{ periodo?: string; grupo?: string; page?: string; search?: string }>;
 }) {
-    const params = await searchParams;
-    const periodo = params.periodo || "";
-    const grupo = params.grupo || "";
-    const page = Number(params.page) || 1;
-    const search = params.search || "";
+  const params = await searchParams;
+  const periodo = params.periodo || "";
+  const grupo = params.grupo || "";
+  const search = params.search?.trim() ?? "";
+  const requestedPage = parsePage(params.page);
 
+  // 1. Obtener catálogos (Periodos, Docentes, Materias)
   let periodos: Periodo[] = [];
+  let docentesList: { id: number; primerNombre: string; primerApellido: string }[] = [];
+  let materiasList: { id: number; nombre: string; nivel: string }[] = [];
+
   try {
-    const res = (await fetchAPI("/periodo_academico/obtener")) as {
-      data?: Periodo[];
-    };
-    periodos = res.data || [];
+    const [resPeriodos, resDocentes, resMaterias] = await Promise.all([
+      fetchAPI<{ data: Periodo[] }>("/periodo_academico/obtener").catch(() => ({ data: [] })),
+      fetchAPI<{ data: any[] }>("/docentes/obtener?limit=1000").catch(() => ({ data: [] })),
+      fetchAPI<{ data: any[] }>("/materia/obtener?limit=1000").catch(() => ({ data: [] })),
+    ]);
+
+    periodos = resPeriodos.data || [];
+    docentesList = resDocentes.data || [];
+    materiasList = resMaterias.data || [];
   } catch (error) {
-    console.error("Error cargando periodos:", error);
+    console.error("Error cargando catálogos:", error);
   }
 
-  let asignaciones: Asignacion[] = [];
-  let totalPages = 1;
-  const ITEMS_PER_PAGE = 10;
+  // 2. Preparar parámetros de URL para delegar todo al backend
+  const queryParams = new URLSearchParams({
+    page: String(requestedPage),
+    limit: String(PAGE_SIZE),
+  });
+  if (search) queryParams.set("search", search);
+  if (grupo) queryParams.set("grupo", grupo); // El nuevo endpoint de NestJS leerá esto
+
+  let response: DistributivoResponsePaginated = {
+    data: [],
+    totalPages: 0,
+    currentPage: requestedPage,
+    totalRows: 0,
+  };
 
   if (periodo) {
-    if (grupo) {
-      const gruposDict: Record<string, string[]> = {
-        "BE": ["1ro BE", "2do BE"],
-        "BM": ["1ro BM", "2do BM", "3ro BM"],
-        "BS": ["1ro BS", "2do BS", "3ro BS"],
-        "BCH": ["1ro BCH", "2do BCH", "3ro BCH"],
-        "Agr": ["BM", "BS", "BCH", "BS BCH", "BE", "BM BS", "BM BS BCH"],
-      };
-      
-      const niveles = gruposDict[grupo] || [];
-      
-      try {
-        const resultados = await Promise.all(
-          niveles.map((nivel) =>
-            fetchAPI(`/asignaciones/nivel/${encodeURIComponent(nivel)}/${periodo}`)
-          )
-        );
-        
-        let combinados = resultados.flatMap((r: any) => r.data || r);
-        
-        if (search) {
-          const searchLower = search.toLowerCase();
-          combinados = combinados.filter((item: any) => 
-            JSON.stringify(item).toLowerCase().includes(searchLower)
-          );
-        }
-
-        const total = combinados.length;
-        totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
-        
-        const start = (page - 1) * ITEMS_PER_PAGE;
-        asignaciones = combinados.slice(start, start + ITEMS_PER_PAGE);
-
-      } catch (error) {
-        console.error("Error obteniendo asignaciones por grupo:", error);
-      }
-
-    } else {
-      try {
-        const res = (await fetchAPI(
-          `/asignaciones/obtener/periodo/${periodo}?page=${page}&limit=${ITEMS_PER_PAGE}&search=${encodeURIComponent(search)}`
-        )) as { data?: Asignacion[]; totalRows?: number };
-        
-        asignaciones = res.data || [];
-        const totalRows = res.totalRows || asignaciones.length; 
-        totalPages = Math.max(1, Math.ceil(totalRows / ITEMS_PER_PAGE));
-        
-        console.log(asignaciones[0]);
-
-      } catch (error) {
-        console.error("Error obteniendo asignaciones por periodo:", error);
-      }
+    try {
+      // Llamada unificada: Asumimos que prepararemos este endpoint en el backend
+      response = await fetchAPI<DistributivoResponsePaginated>(
+        `/asignaciones/obtener/periodo/${periodo}?${queryParams.toString()}`
+      );
+    } catch (error) {
+      console.error("Error obteniendo distributivo:", error);
     }
   }
 
+  // Redirección si la página solicitada excede el límite (Igual que en Docentes)
+  if (response.totalPages > 0 && requestedPage > response.totalPages) {
+    const redirectParams = new URLSearchParams();
+    if (response.totalPages > 1) redirectParams.set("page", String(response.totalPages));
+    if (periodo) redirectParams.set("periodo", periodo);
+    if (grupo) redirectParams.set("grupo", grupo);
+    if (search) redirectParams.set("search", search);
+
+    redirect(`/dashboard/distributivo?${redirectParams.toString()}`);
+  }
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Distributivo de Cursos</h1>
-      
-      { <DistributivoClient 
-        periodos={periodos} 
-        asignaciones={asignaciones} 
-        currentPeriodo={periodo}
-        currentGrupo={grupo}
-        totalPages={totalPages}
-        currentPage={page}
-      /> }
-    </div>
+    <DistributivoClient 
+      periodos={periodos} 
+      asignaciones={response.data ?? []} 
+      docentesList={docentesList}
+      materiasList={materiasList}
+      currentPeriodo={periodo}
+      currentGrupo={grupo}
+      initialSearch={search}
+      currentPage={response.currentPage || requestedPage}
+      totalPages={response.totalPages || 0}
+    />
   );
 }
