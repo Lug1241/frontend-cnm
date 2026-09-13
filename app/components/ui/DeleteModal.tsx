@@ -1,7 +1,7 @@
 "use client";
 import { useTransition } from "react";
 
-interface DeleteModalProps<T> {
+interface DeleteModalProps<T, TId extends string | number> {
   isOpen: boolean;
   onClose: () => void;
   item: T | null;
@@ -9,11 +9,11 @@ interface DeleteModalProps<T> {
   // Una función que reciba el ítem y devuelva el texto descriptivo que se mostrará en pantalla
   getItemName: (item: T) => string;
   // La Server Action de eliminación que recibe el ID (string o number)
-  onDeleteAction: (id: number) => Promise<{ success: boolean; error?: string }>;
+  onDeleteAction: (id: TId) => Promise<{ success: boolean; error?: string }>;
   idKey?: keyof T; // Por defecto asumiremos "id", pero por si usas "ID" en mayúscula
 }
 
-export default function DeleteModal<T>({
+export default function DeleteModal<T, TId extends string | number = number>({
   isOpen,
   onClose,
   item,
@@ -21,7 +21,7 @@ export default function DeleteModal<T>({
   getItemName,
   onDeleteAction,
   idKey = "id" as keyof T,
-}: DeleteModalProps<T>) {
+}: DeleteModalProps<T, TId>) {
   const [isDeleting, startDeleteTransition] = useTransition();
 
   if (!isOpen || !item) return null;
@@ -29,7 +29,7 @@ export default function DeleteModal<T>({
   const handleDelete = () => {
     startDeleteTransition(async () => {
       // Extraemos dinámicamente el ID usando la llave provista
-      const itemId = item[idKey] as unknown as number;
+      const itemId = item[idKey] as unknown as TId;
       const result = await onDeleteAction(itemId);
 
       if (result.success) {

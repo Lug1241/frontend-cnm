@@ -25,6 +25,7 @@ interface DataTableProps<T> {
   // Acciones
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
+  renderActions?: (item: T) => React.ReactNode;
   // Paginación
   currentPage?: number;
   totalPages?: number;
@@ -44,6 +45,7 @@ export default function DataTable<T>({
   customFilters,
   onEdit,
   onDelete,
+  renderActions,
   currentPage = 1,
   totalPages = 1,
   onPageChange,
@@ -102,7 +104,7 @@ export default function DataTable<T>({
                   {col.header}
                 </th>
               ))}
-              {(onEdit || onDelete) && (
+              {(onEdit || onDelete || renderActions) && (
                 <th className="px-6 py-4 font-semibold text-center w-24">Acciones</th>
               )}
             </tr>
@@ -116,9 +118,10 @@ export default function DataTable<T>({
                       {col.cell ? col.cell(item) : col.accessorKey ? String(item[col.accessorKey]) : null}
                     </td>
                   ))}
-                  {(onEdit || onDelete) && (
+                  {(onEdit || onDelete || renderActions) && (
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-4">
+                        {renderActions?.(item)}
                         {onEdit && (
                           <button onClick={() => onEdit(item)} className="text-blue-500 hover:text-blue-700 transition-colors">
                             <MdOutlineEdit className="w-5 h-5" />
@@ -136,7 +139,7 @@ export default function DataTable<T>({
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={columns.length + (onEdit || onDelete || renderActions ? 1 : 0)} className="px-6 py-8 text-center text-gray-500">
                   No hay datos disponibles.
                 </td>
               </tr>

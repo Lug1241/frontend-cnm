@@ -1,14 +1,14 @@
 export type UserType = "docente" | "representante";
-export type UserRole = "Administrador" | "Profesor" | "Secretaria" | "Inspector" | "Vicerrector" ;
+export type UserRole =
+  "Administrador" | "Profesor" | "Secretaria" | "Inspector" | "Vicerrector";
 
 export interface SubModule {
   id: string;
   label: string;
   path: string;
   icon?: string;
-  allowedTypes?: UserType[]; 
-  allowedRoles?: string[];   
-  
+  allowedTypes?: UserType[];
+  allowedRoles?: string[];
 }
 
 export interface SystemModule {
@@ -17,7 +17,7 @@ export interface SystemModule {
   icon: string;
   path: string;
   allowedTypes: UserType[];
-  allowedRoles?: string[]; 
+  allowedRoles?: string[];
   submodules?: SubModule[];
   hideInGrid?: boolean;
 }
@@ -29,7 +29,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
     icon: "🏠",
     path: "/dashboard",
     allowedTypes: ["docente", "representante"],
-    hideInGrid: true, 
+    hideInGrid: true,
   },
   {
     id: "configuracion",
@@ -37,19 +37,72 @@ export const SYSTEM_MODULES: SystemModule[] = [
     icon: "⚙️",
     path: "/dashboard/configuracion/periodos",
     allowedTypes: ["docente"],
-    allowedRoles: ["Administrador"], 
+    allowedRoles: ["Administrador"],
     submodules: [
-      { id: "conf-periodos", label: "Periodos académicos", path: "/dashboard/configuracion/periodos", icon: "🎓" },
-      { id: "conf-materias", label: "Materias", path: "/dashboard/configuracion/materias", icon: "📘" },
-      { id: "conf-docentes", label: "Docentes", path: "/dashboard/configuracion/docentes", icon: "🧑‍🏫" },
-      { id: "conf-distributivo", label: "Distributivo", path: "/dashboard/configuracion/distributivo", icon: "🏢" },
-      { id: "conf-cursos", label: "Cursos vacíos", path: "/dashboard/configuracion/cursos-vacios", icon: "📦" }
-    ]
+      {
+        id: "conf-periodos",
+        label: "Periodos académicos",
+        path: "/dashboard/configuracion/periodos",
+        icon: "🎓",
+      },
+      {
+        id: "conf-materias",
+        label: "Materias",
+        path: "/dashboard/configuracion/materias",
+        icon: "📘",
+      },
+      {
+        id: "conf-docentes",
+        label: "Docentes",
+        path: "/dashboard/configuracion/docentes",
+        icon: "🧑‍🏫",
+      },
+      {
+        id: "conf-distributivo",
+        label: "Distributivo",
+        path: "/dashboard/configuracion/distributivo",
+        icon: "🏢",
+      },
+      {
+        id: "conf-cursos",
+        label: "Cursos vacíos",
+        path: "/dashboard/configuracion/cursos-vacios",
+        icon: "📦",
+      },
+    ],
+  },
+  {
+    id: "estudiantil",
+    label: "Estudiantil",
+    icon: "👥",
+    path: "/dashboard/estudiantil",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Administrador"],
+    submodules: [
+      {
+        id: "est-representantes",
+        label: "Representantes",
+        path: "/dashboard/estudiantil/representantes",
+        icon: "👤",
+      },
+      {
+        id: "est-estudiantes",
+        label: "Estudiantes",
+        path: "/dashboard/estudiantil/estudiantes",
+        icon: "🎓",
+      },
+      {
+        id: "est-registro",
+        label: "Registro de estudiantes",
+        path: "/dashboard/estudiantil/inscripciones",
+        icon: "➕",
+      },
+    ],
   },
   {
     id: "calificaciones",
     label: "Calificaciones",
-    icon: "📊", 
+    icon: "📊",
     path: "/dashboard/calificaciones",
     allowedTypes: ["docente", "representante"],
   },
@@ -74,22 +127,16 @@ export const SYSTEM_MODULES: SystemModule[] = [
     path: "/dashboard/matriculacion/grupales",
     allowedTypes: ["docente", "representante"],
   },
-  
-  {
-    id: "estudiantil",
-    label: "Estudiantil",
-    icon: "👥",
-    path: "/dashboard/estudiantil",
-    allowedTypes: ["docente"],
-    allowedRoles: ["Administrador", "Secretaria", "Inspector", "Vicerrector"], 
-  }
 ];
 
 // Función utilitaria para filtrar módulos y submódulos según type y rol
-export const filterModulesByUser = (modules: SystemModule[], type: UserType, role: UserRole) => {
+export const filterModulesByUser = (
+  modules: SystemModule[],
+  type: UserType,
+  role: UserRole,
+) => {
   return modules
     .filter((module) => {
-
       if (!module.allowedTypes.includes(type)) return false;
       if (module.allowedRoles && module.allowedRoles.length > 0) {
         if (!module.allowedRoles.includes(role)) return false;
@@ -97,11 +144,16 @@ export const filterModulesByUser = (modules: SystemModule[], type: UserType, rol
       return true;
     })
     .map((module) => {
-
       if (module.submodules) {
         const filteredSub = module.submodules.filter((sub) => {
-          if (sub.allowedTypes && !sub.allowedTypes.includes(type)) return false;
-          if (sub.allowedRoles && sub.allowedRoles.length > 0 && !sub.allowedRoles.includes(role)) return false;
+          if (sub.allowedTypes && !sub.allowedTypes.includes(type))
+            return false;
+          if (
+            sub.allowedRoles &&
+            sub.allowedRoles.length > 0 &&
+            !sub.allowedRoles.includes(role)
+          )
+            return false;
           return true;
         });
         return { ...module, submodules: filteredSub };

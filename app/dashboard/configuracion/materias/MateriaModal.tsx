@@ -146,19 +146,6 @@ export default function MateriaModal({
               />
             </div>
 
-            <div className="flex flex-col gap-1.5 sm:col-span-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Observaciones
-              </label>
-              <textarea
-                name="observaciones"
-                defaultValue={materiaToEdit?.observaciones ?? ""}
-                maxLength={255}
-                rows={3}
-                placeholder="Información adicional (opcional)"
-                className="w-full resize-y rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00408a]"
-              />
-            </div>
           </div>
 
           <div className="flex items-center justify-center gap-4 pt-4">
