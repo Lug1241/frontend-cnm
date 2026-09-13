@@ -205,9 +205,7 @@ export default function EstudiantesPage({
             data={initialEstudiantes}
             columns={columns}
             addLabel="Registrar estudiante"
-            onAdd={() =>
-              router.push("/dashboard/estudiantil/registro-estudiantes")
-            }
+            onAdd={() => router.push("/dashboard/estudiantil/inscripciones")}
             searchValue={searchValue}
             onSearchChange={setSearchValue}
             searchPlaceholder="Buscar por nombre o cédula..."

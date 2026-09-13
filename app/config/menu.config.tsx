@@ -94,7 +94,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
       {
         id: "est-registro",
         label: "Registro de estudiantes",
-        path: "/dashboard/estudiantil/registro-estudiantes",
+        path: "/dashboard/estudiantil/inscripciones",
         icon: "➕",
       },
     ],
