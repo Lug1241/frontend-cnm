@@ -309,9 +309,12 @@ export default function EstudiantesPage({
         estudiante={toEdit}
         representantes={representantes}
         onClose={() => setToEdit(null)}
-        onSaveAction={(formData) =>
-          updateEstudiante(toEdit?.nroCedula ?? "", formData)
-        }
+        onSaveAction={async (formData) => {
+          const cedula = toEdit?.nroCedula ?? "";
+          const result = await updateEstudiante(cedula, formData);
+          if (result.success && cedula) closeStudentDetails(cedula);
+          return result;
+        }}
       />
 
       <RepresentanteModal

@@ -214,11 +214,13 @@ export default function RepresentantesPage({
           setToEdit(null);
         }}
         representanteToEdit={toEdit}
-        onSaveAction={(cedula, formData) =>
-          cedula
-            ? updateRepresentante(cedula, formData)
-            : createRepresentante(formData)
-        }
+        onSaveAction={async (cedula, formData) => {
+          const result = cedula
+            ? await updateRepresentante(cedula, formData)
+            : await createRepresentante(formData);
+          if (result.success && cedula) closeDetails(cedula);
+          return result;
+        }}
       />
       {toDelete && (
         <DeleteModal
