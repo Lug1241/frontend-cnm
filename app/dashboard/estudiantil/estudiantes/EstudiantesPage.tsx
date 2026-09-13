@@ -18,7 +18,11 @@ import {
   updateEstudiante,
 } from "./actions";
 
-type ActiveTab = "students" | "detail";
+interface StudentDetailState {
+  representante: Representante | null;
+  error?: string;
+  loading: boolean;
+}
 
 interface EstudiantesPageProps {
   initialEstudiantes: Estudiante[];
@@ -44,20 +48,23 @@ export default function EstudiantesPage({
   const searchParams = useSearchParams();
   const [isNavigating, startNavigation] = useTransition();
   const [searchValue, setSearchValue] = useState(initialSearch);
-  const [activeTab, setActiveTab] = useState<ActiveTab>("students");
-  const [selectedStudent, setSelectedStudent] = useState<Estudiante | null>(
-    null,
-  );
+  const [activeTab, setActiveTab] = useState("students");
+  const [openStudents, setOpenStudents] = useState<Estudiante[]>([]);
   const [toEdit, setToEdit] = useState<Estudiante | null>(null);
   const [representativeToEdit, setRepresentativeToEdit] =
     useState<Representante | null>(null);
   const [toDelete, setToDelete] = useState<Estudiante | null>(null);
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
-  const [representante, setRepresentante] = useState<Representante | null>(
-    null,
+  const [studentDetails, setStudentDetails] = useState<
+    Record<string, StudentDetailState>
+  >({});
+
+  const selectedStudent = openStudents.find(
+    (student) => student.nroCedula === activeTab,
   );
-  const [detailError, setDetailError] = useState<string>();
-  const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const selectedDetail = selectedStudent
+    ? studentDetails[selectedStudent.nroCedula]
+    : undefined;
 
   useEffect(() => {
     const search = searchValue.trim();
@@ -117,28 +124,58 @@ export default function EstudiantesPage({
     });
   };
 
-  const loadRepresentative = async (student: Estudiante) => {
-    setRepresentante(null);
-    setDetailError(undefined);
-    setIsDetailLoading(true);
+  const loadRepresentative = async (student: Estudiante, force = false) => {
+    if (studentDetails[student.nroCedula] && !force) return;
+
+    setStudentDetails((current) => ({
+      ...current,
+      [student.nroCedula]: { representante: null, loading: true },
+    }));
     const result = await getRepresentanteDetail(student.representanteCedula);
-    setIsDetailLoading(false);
-    if (result.success && result.data) setRepresentante(result.data);
-    else setDetailError(result.error);
+    setStudentDetails((current) => ({
+      ...current,
+      [student.nroCedula]: {
+        representante: result.data ?? null,
+        error: result.success ? undefined : result.error,
+        loading: false,
+      },
+    }));
   };
 
   const showStudentDetails = (student: Estudiante) => {
-    setSelectedStudent(student);
-    setActiveTab("detail");
+    setOpenStudents((current) =>
+      current.some((item) => item.nroCedula === student.nroCedula)
+        ? current
+        : [...current, student],
+    );
+    setActiveTab(student.nroCedula);
     void loadRepresentative(student);
   };
 
-  const closeStudentDetails = () => {
-    setActiveTab("students");
-    setSelectedStudent(null);
-    setRepresentante(null);
-    setDetailError(undefined);
-    setIsDetailLoading(false);
+  const closeStudentDetails = (nroCedula: string) => {
+    setOpenStudents((current) => {
+      const index = current.findIndex(
+        (student) => student.nroCedula === nroCedula,
+      );
+      const remaining = current.filter(
+        (student) => student.nroCedula !== nroCedula,
+      );
+
+      if (activeTab === nroCedula) {
+        setActiveTab(
+          remaining[index]?.nroCedula ??
+            remaining[index - 1]?.nroCedula ??
+            "students",
+        );
+      }
+
+      return remaining;
+    });
+    setStudentDetails((current) => {
+      const updated = { ...current };
+      delete updated[nroCedula];
+      return updated;
+    });
   };
 
   return (
@@ -161,10 +198,11 @@ export default function EstudiantesPage({
         >
           Estudiantes
         </button>
-        {selectedStudent && (
+        {openStudents.map((student) => (
           <div
-            className={`flex items-center rounded-t-md border text-sm font-semibold ${
-              activeTab === "detail"
+            key={student.nroCedula}
+            className={`flex shrink-0 items-center rounded-t-md border text-sm font-semibold ${
+              activeTab === student.nroCedula
                 ? "border-blue-600 bg-blue-600 text-white"
                 : "border-gray-200 bg-white text-gray-700"
             }`}
@@ -172,23 +210,23 @@ export default function EstudiantesPage({
             <button
               type="button"
               role="tab"
-              aria-selected={activeTab === "detail"}
-              onClick={() => setActiveTab("detail")}
+              aria-selected={activeTab === student.nroCedula}
+              onClick={() => setActiveTab(student.nroCedula)}
               className="px-4 py-2.5"
             >
-              {selectedStudent.primerNombre} {selectedStudent.primerApellido}
+              {student.primerNombre} {student.primerApellido}
             </button>
             <button
               type="button"
-              onClick={closeStudentDetails}
+              onClick={() => closeStudentDetails(student.nroCedula)}
               className="mr-2 rounded p-1 hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-white"
               title="Cerrar pestaña"
-              aria-label={`Cerrar información de ${selectedStudent.primerNombre} ${selectedStudent.primerApellido}`}
+              aria-label={`Cerrar información de ${student.primerNombre} ${student.primerApellido}`}
             >
               <MdClose className="h-4 w-4" />
             </button>
           </div>
-        )}
+        ))}
       </div>
 
       {errorMsg && (
@@ -254,14 +292,15 @@ export default function EstudiantesPage({
         </div>
       )}
 
-      {activeTab === "detail" && selectedStudent && (
+      {selectedStudent && (
         <EstudianteDetailPanel
           estudiante={selectedStudent}
-          representante={representante}
-          representativeError={detailError}
-          representativeLoading={isDetailLoading}
+          representante={selectedDetail?.representante ?? null}
+          representativeError={selectedDetail?.error}
+          representativeLoading={selectedDetail?.loading ?? false}
           onEditRepresentative={() => {
-            if (representante) setRepresentativeToEdit(representante);
+            if (selectedDetail?.representante)
+              setRepresentativeToEdit(selectedDetail.representante);
           }}
         />
       )}
@@ -288,7 +327,7 @@ export default function EstudiantesPage({
           }
           const result = await updateRepresentante(cedula, formData);
           if (result.success && selectedStudent) {
-            await loadRepresentative(selectedStudent);
+            await loadRepresentative(selectedStudent, true);
           }
           return result;
         }}
