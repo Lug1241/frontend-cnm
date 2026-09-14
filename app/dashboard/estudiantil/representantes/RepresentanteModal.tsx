@@ -148,27 +148,29 @@ export default function RepresentanteModal({
                 className={inputClass}
               />
             </label>
-            <ArchivoPdfInput
-              name="copiaCedula"
-              label={
-                isEditing
-                  ? "Cédula PDF (opcional)"
-                  : "Cédula PDF (obligatorio)"
-              }
-              rutaActual={representanteToEdit?.cedulaPdf}
-              required={!isEditing}
-            />
+            <div className="grid grid-cols-1 gap-4 sm:col-span-2 sm:grid-cols-2">
+              <ArchivoPdfInput
+                name="copiaCedula"
+                label={
+                  isEditing
+                    ? "Cédula PDF (opcional)"
+                    : "Cédula PDF (obligatorio)"
+                }
+                rutaActual={representanteToEdit?.cedulaPdf}
+                required={!isEditing}
+              />
 
-            <ArchivoPdfInput
-              name="croquis"
-              label={
-                isEditing
-                  ? "Croquis PDF (opcional)"
-                  : "Croquis PDF (obligatorio)"
-              }
-              rutaActual={representanteToEdit?.croquisPdf}
-              required={!isEditing}
-            />
+              <ArchivoPdfInput
+                name="croquis"
+                label={
+                  isEditing
+                    ? "Croquis PDF (opcional)"
+                    : "Croquis PDF (obligatorio)"
+                }
+                rutaActual={representanteToEdit?.croquisPdf}
+                required={!isEditing}
+              />
+            </div>
           </div>
           <div className="flex justify-center gap-4 pt-4">
             <button
