@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MdClose, MdDownload, MdOutlineVisibility } from "react-icons/md";
 import DataTable, { type ColumnDef } from "@/app/components/ui/DataTable";
+import Toast from "@/app/components/ui/Toast";
 import DeleteModal from "@/app/components/ui/DeleteModal";
 import { NIVELES_ESTUDIANTE, type Estudiante } from "@/types/Estudiante";
 import { type Representante } from "@/types/Representante";
@@ -55,6 +56,7 @@ export default function EstudiantesPage({
     useState<Representante | null>(null);
   const [toDelete, setToDelete] = useState<Estudiante | null>(null);
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [studentDetails, setStudentDetails] = useState<
     Record<string, StudentDetailState>
   >({});
@@ -65,6 +67,12 @@ export default function EstudiantesPage({
   const selectedDetail = selectedStudent
     ? studentDetails[selectedStudent.nroCedula]
     : undefined;
+  const createdSuccessfully =
+  searchParams.get("toast") === "estudiante-creado";
+
+const visibleToastMessage = createdSuccessfully
+  ? "Estudiante creado correctamente."
+  : toastMessage;
 
   useEffect(() => {
     const search = searchValue.trim();
@@ -178,8 +186,30 @@ export default function EstudiantesPage({
     });
   };
 
+  const closeToast = () => {
+  setToastMessage(null);
+
+  if (searchParams.get("toast")) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("toast");
+
+    const query = params.toString();
+
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }
+};
+
   return (
     <div className="min-h-full bg-white">
+      {visibleToastMessage && (
+        <Toast
+          message={visibleToastMessage}
+          onClose={closeToast}
+        />
+      )
+    }
       <div
         className="flex min-h-12 items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-4 pt-3 sm:px-6 lg:px-8"
         role="tablist"
@@ -312,7 +342,13 @@ export default function EstudiantesPage({
         onSaveAction={async (formData) => {
           const cedula = toEdit?.nroCedula ?? "";
           const result = await updateEstudiante(cedula, formData);
-          if (result.success && cedula) closeStudentDetails(cedula);
+
+          if (result.success) {
+            if (cedula) closeStudentDetails(cedula);
+
+            setToastMessage("Estudiante actualizado correctamente.");
+          }
+
           return result;
         }}
       />

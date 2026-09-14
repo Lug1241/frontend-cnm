@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MdClose, MdOutlineVisibility } from "react-icons/md";
 import DataTable, { type ColumnDef } from "@/app/components/ui/DataTable";
 import DeleteModal from "@/app/components/ui/DeleteModal";
+import Toast from "@/app/components/ui/Toast";
 import { type Representante } from "@/types/Representante";
 import RepresentanteModal from "./RepresentanteModal";
 import RepresentanteDetailPanel from "./RepresentanteDetailPanel";
@@ -37,6 +38,7 @@ export default function RepresentantesPage({
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [toEdit, setToEdit] = useState<Representante | null>(null);
   const [toDelete, setToDelete] = useState<Representante | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("representantes");
   const [openRepresentantes, setOpenRepresentantes] = useState<Representante[]>(
     [],
@@ -117,6 +119,12 @@ export default function RepresentantesPage({
 
   return (
     <div className="min-h-full bg-white">
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       <div
         className="flex min-h-12 items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-4 pt-3 sm:px-6 lg:px-8"
         role="tablist"
@@ -215,10 +223,22 @@ export default function RepresentantesPage({
         }}
         representanteToEdit={toEdit}
         onSaveAction={async (cedula, formData) => {
+          const isEditing = Boolean(cedula);
+
           const result = cedula
             ? await updateRepresentante(cedula, formData)
             : await createRepresentante(formData);
-          if (result.success && cedula) closeDetails(cedula);
+
+          if (result.success) {
+            if (cedula) closeDetails(cedula);
+
+            setToastMessage(
+              isEditing
+                ? "Representante actualizado correctamente."
+                : "Representante creado correctamente.",
+            );
+          }
+
           return result;
         }}
       />
