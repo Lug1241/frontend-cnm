@@ -365,9 +365,15 @@ const visibleToastMessage = createdSuccessfully
             };
           }
           const result = await updateRepresentante(cedula, formData);
-          if (result.success && selectedStudent) {
-            await loadRepresentative(selectedStudent, true);
+
+          if (result.success) {
+            if (selectedStudent) {
+              await loadRepresentative(selectedStudent, true);
+            }
+
+            setToastMessage("Representante actualizado correctamente.");
           }
+
           return result;
         }}
       />
