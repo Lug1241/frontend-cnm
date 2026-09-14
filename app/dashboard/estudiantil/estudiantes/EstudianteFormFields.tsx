@@ -236,14 +236,16 @@ export default function EstudianteFormFields({
       </label>
       <ArchivoPdfInput
         name="copiaCedula"
-        label="Cédula PDF (opcional)"
+        label={estudiante ? "Cédula PDF (opcional)" : "Cédula PDF (obligatorio)"}
         rutaActual={estudiante?.cedulaPdf}
+        required={!estudiante}
       />
       <div className="sm:col-span-2">
         <ArchivoPdfInput
           name="matricula_IER"
-          label="Matrícula IER PDF (opcional)"
+          label={estudiante ? "Matrícula IER PDF (opcional)" : "Matrícula IER PDF (obligatorio)"}
           rutaActual={estudiante?.matriculaIerPdf}
+          required={!estudiante}
         />
       </div>
     </div>

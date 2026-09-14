@@ -15,6 +15,16 @@ export interface RepresentanteDetailResult extends EstudianteActionResult {
   data?: Representante;
 }
 
+function eliminarArchivosVacios(formData: FormData) {
+  for (const campo of ["copiaCedula", "matricula_IER"]) {
+    const valor = formData.get(campo);
+
+    if (valor && typeof valor !== "string" && valor.size === 0) {
+      formData.delete(campo);
+    }
+  }
+}
+
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
@@ -23,6 +33,8 @@ export async function createEstudiante(
   formData: FormData,
 ): Promise<EstudianteActionResult> {
   try {
+    eliminarArchivosVacios(formData);
+
     await fetchAPI("/estudiantes/crear", {
       method: "POST",
       body: formData,
@@ -42,6 +54,8 @@ export async function updateEstudiante(
   formData: FormData,
 ): Promise<EstudianteActionResult> {
   try {
+    eliminarArchivosVacios(formData);
+
     await fetchAPI(`/estudiantes/editar/${encodeURIComponent(currentCedula)}`, {
       method: "PUT",
       body: formData,

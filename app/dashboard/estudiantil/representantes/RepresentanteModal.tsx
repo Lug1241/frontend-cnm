@@ -150,13 +150,24 @@ export default function RepresentanteModal({
             </label>
             <ArchivoPdfInput
               name="copiaCedula"
-              label="Cédula PDF (opcional)"
+              label={
+                isEditing
+                  ? "Cédula PDF (opcional)"
+                  : "Cédula PDF (obligatorio)"
+              }
               rutaActual={representanteToEdit?.cedulaPdf}
+              required={!isEditing}
             />
+
             <ArchivoPdfInput
               name="croquis"
-              label="Croquis PDF (opcional)"
+              label={
+                isEditing
+                  ? "Croquis PDF (opcional)"
+                  : "Croquis PDF (obligatorio)"
+              }
               rutaActual={representanteToEdit?.croquisPdf}
+              required={!isEditing}
             />
           </div>
           <div className="flex justify-center gap-4 pt-4">

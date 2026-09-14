@@ -10,6 +10,16 @@ export interface RepresentanteActionResult {
   error?: string;
 }
 
+function eliminarArchivosVacios(formData: FormData) {
+  for (const campo of ["copiaCedula", "croquis"]) {
+    const valor = formData.get(campo);
+
+    if (valor && typeof valor !== "string" && valor.size === 0) {
+      formData.delete(campo);
+    }
+  }
+}
+
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
@@ -18,6 +28,8 @@ export async function createRepresentante(
   formData: FormData,
 ): Promise<RepresentanteActionResult> {
   try {
+    eliminarArchivosVacios(formData);
+
     await fetchAPI("/representantes/crear", {
       method: "POST",
       body: formData,
@@ -36,7 +48,8 @@ export async function updateRepresentante(
   nroCedula: string,
   formData: FormData,
 ): Promise<RepresentanteActionResult> {
-  try {
+  try{
+    eliminarArchivosVacios(formData);
     await fetchAPI(`/representantes/editar/${encodeURIComponent(nroCedula)}`, {
       method: "PUT",
       body: formData,

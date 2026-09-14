@@ -13,6 +13,7 @@ interface ArchivoPdfInputProps {
   name: string;
   label: string;
   rutaActual?: string | null;
+  required?: boolean;
 }
 
 function datosArchivo(ruta?: string | null) {
@@ -64,6 +65,7 @@ export function ArchivoPdfInput({
   name,
   label,
   rutaActual,
+  required = false,
 }: ArchivoPdfInputProps) {
   return (
     <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
@@ -77,6 +79,7 @@ export function ArchivoPdfInput({
         type="file"
         name={name}
         accept="application/pdf,.pdf"
+        required={required}
         onChange={(event) => {
           const file = event.currentTarget.files?.[0];
           event.currentTarget.setCustomValidity(

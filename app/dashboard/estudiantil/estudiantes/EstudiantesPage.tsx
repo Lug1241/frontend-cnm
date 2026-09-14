@@ -87,11 +87,11 @@ export default function EstudiantesPage({
   const columns: ColumnDef<Estudiante>[] = [
     { header: "Cédula/Pasaporte", accessorKey: "nroCedula" },
     {
-      header: "Nombre",
+      header: "Nombres",
       cell: (item) => `${item.primerNombre} ${item.segundoNombre}`,
     },
     {
-      header: "Apellido",
+      header: "Apellidos",
       cell: (item) => `${item.primerApellido} ${item.segundoApellido}`,
     },
     { header: "Jornada", accessorKey: "jornada" },
