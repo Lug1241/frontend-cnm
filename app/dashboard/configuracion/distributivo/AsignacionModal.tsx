@@ -152,7 +152,7 @@ export default function AsignacionModal({
             <div>
               <label className="block text-sm text-gray-700 mb-1">Asignatura:</label>
               <AutoCompleteInput
-                opciones={materiasList.filter((m: any) => m.tipo && m.tipo.toLowerCase() === 'grupal')}
+                opciones={materiasList}
                 inputValue={materiasList.find(m => m.id.toString() === formData.ID_materia) || null}
                 setInputValue={(materia) => setFormData({ ...formData, ID_materia: materia ? materia.id.toString() : "" })}
                 key1="nombre"

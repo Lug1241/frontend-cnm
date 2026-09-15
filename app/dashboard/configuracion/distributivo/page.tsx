@@ -58,7 +58,7 @@ export default async function DistributivoPage({
     const [resPeriodos, resDocentes, resMaterias] = await Promise.all([
       fetchAPI<{ data: Periodo[] }>("/periodo_academico/obtener").catch(() => ({ data: [] })),
       fetchAPI<{ data: any[] }>("/docentes/obtener?limit=1000").catch(() => ({ data: [] })),
-      fetchAPI<{ data: any[] }>("/materia/obtener?limit=1000").catch(() => ({ data: [] })),
+      fetchAPI<{ data: any[] }>("/materia/obtener/tipo/grupal?limit=1000").catch(() => ({ data: [] })),
     ]);
 
     periodos = resPeriodos.data || [];
