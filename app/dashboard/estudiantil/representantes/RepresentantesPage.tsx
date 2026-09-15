@@ -2,10 +2,13 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { MdClose, MdOutlineVisibility } from "react-icons/md";
 import DataTable, { type ColumnDef } from "@/app/components/ui/DataTable";
 import DeleteModal from "@/app/components/ui/DeleteModal";
+import Toast from "@/app/components/ui/Toast";
 import { type Representante } from "@/types/Representante";
 import RepresentanteModal from "./RepresentanteModal";
+import RepresentanteDetailPanel from "./RepresentanteDetailPanel";
 import {
   createRepresentante,
   deleteRepresentante,
@@ -35,6 +38,14 @@ export default function RepresentantesPage({
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [toEdit, setToEdit] = useState<Representante | null>(null);
   const [toDelete, setToDelete] = useState<Representante | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("representantes");
+  const [openRepresentantes, setOpenRepresentantes] = useState<Representante[]>(
+    [],
+  );
+  const selectedRepresentante = openRepresentantes.find(
+    (representante) => representante.nroCedula === activeTab,
+  );
 
   useEffect(() => {
     const search = searchValue.trim();
@@ -56,8 +67,14 @@ export default function RepresentantesPage({
 
   const columns: ColumnDef<Representante>[] = [
     { header: "Cédula", accessorKey: "nroCedula" },
-    { header: "Nombres", cell: (item) => `${item.primerNombre} ${item.segundoNombre}` },
-    { header: "Apellidos", cell: (item) => `${item.primerApellido} ${item.segundoApellido}` },
+    {
+      header: "Nombres",
+      cell: (item) => `${item.primerNombre} ${item.segundoNombre}`,
+    },
+    {
+      header: "Apellidos",
+      cell: (item) => `${item.primerApellido} ${item.segundoApellido}`,
+    },
     { header: "Celular", accessorKey: "celular" },
     { header: "Correo", accessorKey: "email" },
   ];
@@ -74,31 +91,130 @@ export default function RepresentantesPage({
     });
   };
 
+  const showDetails = (representante: Representante) => {
+    setOpenRepresentantes((current) =>
+      current.some((item) => item.nroCedula === representante.nroCedula)
+        ? current
+        : [...current, representante],
+    );
+    setActiveTab(representante.nroCedula);
+  };
+
+  const closeDetails = (nroCedula: string) => {
+    setOpenRepresentantes((current) => {
+      const index = current.findIndex((item) => item.nroCedula === nroCedula);
+      const remaining = current.filter((item) => item.nroCedula !== nroCedula);
+
+      if (activeTab === nroCedula) {
+        setActiveTab(
+          remaining[index]?.nroCedula ??
+            remaining[index - 1]?.nroCedula ??
+            "representantes",
+        );
+      }
+
+      return remaining;
+    });
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="min-h-full bg-white">
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+      <div
+        className="flex min-h-12 items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-4 pt-3 sm:px-6 lg:px-8"
+        role="tablist"
+        aria-label="Vistas de representantes"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "representantes"}
+          onClick={() => setActiveTab("representantes")}
+          className={`rounded-t-md border px-5 py-2.5 text-sm font-semibold ${
+            activeTab === "representantes"
+              ? "border-blue-600 bg-blue-600 text-white"
+              : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
+          }`}
+        >
+          Representantes
+        </button>
+        {openRepresentantes.map((representante) => (
+          <div
+            key={representante.nroCedula}
+            className={`flex shrink-0 items-center rounded-t-md border text-sm font-semibold ${
+              activeTab === representante.nroCedula
+                ? "border-blue-600 bg-blue-600 text-white"
+                : "border-gray-200 bg-white text-gray-700"
+            }`}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === representante.nroCedula}
+              onClick={() => setActiveTab(representante.nroCedula)}
+              className="px-4 py-2.5"
+            >
+              {representante.primerNombre} {representante.primerApellido}
+            </button>
+            <button
+              type="button"
+              onClick={() => closeDetails(representante.nroCedula)}
+              className="mr-2 rounded p-1 hover:bg-black/10"
+              title="Cerrar pestaña"
+              aria-label={`Cerrar información de ${representante.primerNombre} ${representante.primerApellido}`}
+            >
+              <MdClose className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
       {errorMsg && (
         <div className="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 sm:m-6 lg:m-8 lg:mb-0">
           ⚠️ {errorMsg}
         </div>
       )}
-      <div className={isNavigating ? "pointer-events-none opacity-70" : ""}>
-        <DataTable
-          title="Representantes"
-          description="Administra los representantes y sus datos de contacto."
-          data={initialRepresentantes}
-          columns={columns}
-          addLabel="Agregar representante"
-          onAdd={() => setIsAddOpen(true)}
-          searchValue={searchValue}
-          onSearchChange={setSearchValue}
-          searchPlaceholder="Buscar por nombre o apellido..."
-          onEdit={setToEdit}
-          onDelete={setToDelete}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={changePage}
+      {activeTab === "representantes" && (
+        <div className={isNavigating ? "pointer-events-none opacity-70" : ""}>
+          <DataTable
+            title="Representantes"
+            description="Administra los representantes y sus datos de contacto."
+            data={initialRepresentantes}
+            columns={columns}
+            addLabel="Agregar representante"
+            onAdd={() => setIsAddOpen(true)}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            searchPlaceholder="Buscar por nombre o apellido..."
+            onEdit={setToEdit}
+            onDelete={setToDelete}
+            renderActions={(item) => (
+              <button
+                type="button"
+                onClick={() => showDetails(item)}
+                title="Ver información"
+                aria-label={`Ver información de ${item.primerNombre} ${item.primerApellido}`}
+                className="text-emerald-600 transition-colors hover:text-emerald-800"
+              >
+                <MdOutlineVisibility className="h-5 w-5" />
+              </button>
+            )}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={changePage}
+          />
+        </div>
+      )}
+      {selectedRepresentante && (
+        <RepresentanteDetailPanel
+          representante={selectedRepresentante}
+          onEdit={() => setToEdit(selectedRepresentante)}
         />
-      </div>
+      )}
       <RepresentanteModal
         isOpen={isAddOpen || Boolean(toEdit)}
         onClose={() => {
@@ -106,11 +222,25 @@ export default function RepresentantesPage({
           setToEdit(null);
         }}
         representanteToEdit={toEdit}
-        onSaveAction={(cedula, formData) =>
-          cedula
-            ? updateRepresentante(cedula, formData)
-            : createRepresentante(formData)
-        }
+        onSaveAction={async (cedula, formData) => {
+          const isEditing = Boolean(cedula);
+
+          const result = cedula
+            ? await updateRepresentante(cedula, formData)
+            : await createRepresentante(formData);
+
+          if (result.success) {
+            if (cedula) closeDetails(cedula);
+
+            setToastMessage(
+              isEditing
+                ? "Representante actualizado correctamente."
+                : "Representante creado correctamente.",
+            );
+          }
+
+          return result;
+        }}
       />
       {toDelete && (
         <DeleteModal

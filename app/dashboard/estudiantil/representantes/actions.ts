@@ -10,31 +10,29 @@ export interface RepresentanteActionResult {
   error?: string;
 }
 
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
+function eliminarArchivosVacios(formData: FormData) {
+  for (const campo of ["copiaCedula", "croquis"]) {
+    const valor = formData.get(campo);
+
+    if (valor && typeof valor !== "string" && valor.size === 0) {
+      formData.delete(campo);
+    }
+  }
 }
 
-function representanteFromFormData(formData: FormData) {
-  return {
-    nroCedula: String(formData.get("nroCedula") ?? "").trim(),
-    primerNombre: String(formData.get("primerNombre") ?? "").trim(),
-    segundoNombre: String(formData.get("segundoNombre") ?? "").trim(),
-    primerApellido: String(formData.get("primerApellido") ?? "").trim(),
-    segundoApellido: String(formData.get("segundoApellido") ?? "").trim(),
-    celular: String(formData.get("celular") ?? "").trim(),
-    email: String(formData.get("email") ?? "").trim(),
-    convencional: String(formData.get("convencional") ?? "").trim(),
-    emergencia: String(formData.get("emergencia") ?? "").trim(),
-  };
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
 }
 
 export async function createRepresentante(
   formData: FormData,
 ): Promise<RepresentanteActionResult> {
   try {
+    eliminarArchivosVacios(formData);
+
     await fetchAPI("/representantes/crear", {
       method: "POST",
-      body: JSON.stringify(representanteFromFormData(formData)),
+      body: formData,
     });
     revalidatePath(REPRESENTANTES_PATH);
     return { success: true };
@@ -50,14 +48,11 @@ export async function updateRepresentante(
   nroCedula: string,
   formData: FormData,
 ): Promise<RepresentanteActionResult> {
-  try {
-    const requestData = {
-      ...representanteFromFormData(formData),
-      nroCedula: undefined,
-    };
+  try{
+    eliminarArchivosVacios(formData);
     await fetchAPI(`/representantes/editar/${encodeURIComponent(nroCedula)}`, {
       method: "PUT",
-      body: JSON.stringify(requestData),
+      body: formData,
     });
     revalidatePath(REPRESENTANTES_PATH);
     revalidatePath("/dashboard/estudiantil/estudiantes");

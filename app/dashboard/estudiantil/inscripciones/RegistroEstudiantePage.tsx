@@ -26,7 +26,7 @@ export default function RegistroEstudiantePage({
     startTransition(async () => {
       const result = await createEstudiante(formData);
       if (result.success) {
-        router.push("/dashboard/estudiantil/estudiantes");
+        router.push("/dashboard/estudiantil/estudiantes?toast=estudiante-creado");
         router.refresh();
       } else {
         setErrorMessage(result.error ?? "No se pudo registrar el estudiante.");

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { type Representante } from "@/types/Representante";
 import { type RepresentanteActionResult } from "./actions";
+import { ArchivoPdfInput } from "@/app/components/ui/ArchivoPdf";
 
 interface RepresentanteModalProps {
   isOpen: boolean;
@@ -102,26 +103,89 @@ export default function RepresentanteModal({
             ))}
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
               Celular
-              <input name="celular" defaultValue={representanteToEdit?.celular ?? ""} inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10} required className={inputClass} />
+              <input
+                name="celular"
+                defaultValue={representanteToEdit?.celular ?? ""}
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                minLength={10}
+                maxLength={10}
+                required
+                className={inputClass}
+              />
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
               Correo electrónico
-              <input type="email" name="email" defaultValue={representanteToEdit?.email ?? ""} required className={inputClass} />
+              <input
+                type="email"
+                name="email"
+                defaultValue={representanteToEdit?.email ?? ""}
+                required
+                className={inputClass}
+              />
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
               Teléfono convencional
-              <input name="convencional" defaultValue={representanteToEdit?.convencional ?? ""} inputMode="numeric" pattern="[0-9]{7,10}" maxLength={10} className={inputClass} />
+              <input
+                name="convencional"
+                defaultValue={representanteToEdit?.convencional ?? ""}
+                inputMode="numeric"
+                pattern="[0-9]{7,10}"
+                maxLength={10}
+                className={inputClass}
+              />
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
               Contacto de emergencia
-              <input name="emergencia" defaultValue={representanteToEdit?.emergencia ?? ""} inputMode="numeric" pattern="[0-9]{7,10}" minLength={7} maxLength={10} required className={inputClass} />
+              <input
+                name="emergencia"
+                defaultValue={representanteToEdit?.emergencia ?? ""}
+                inputMode="numeric"
+                pattern="[0-9]{7,10}"
+                minLength={7}
+                maxLength={10}
+                required
+                className={inputClass}
+              />
             </label>
+            <div className="grid grid-cols-1 gap-4 sm:col-span-2 sm:grid-cols-2">
+              <ArchivoPdfInput
+                name="copiaCedula"
+                label={
+                  isEditing
+                    ? "Cédula PDF (opcional)"
+                    : "Cédula PDF (obligatorio)"
+                }
+                rutaActual={representanteToEdit?.cedulaPdf}
+                required={!isEditing}
+              />
+
+              <ArchivoPdfInput
+                name="croquis"
+                label={
+                  isEditing
+                    ? "Croquis PDF (opcional)"
+                    : "Croquis PDF (obligatorio)"
+                }
+                rutaActual={representanteToEdit?.croquisPdf}
+                required={!isEditing}
+              />
+            </div>
           </div>
           <div className="flex justify-center gap-4 pt-4">
-            <button type="submit" disabled={isPending} className="rounded-md bg-[#007bff] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#0056b3] disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={isPending}
+              className="rounded-md bg-[#007bff] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#0056b3] disabled:opacity-50"
+            >
               {isPending ? "Guardando..." : "Guardar"}
             </button>
-            <button type="button" onClick={closeModal} disabled={isPending} className="rounded-md bg-[#dc3545] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#b02a37] disabled:opacity-50">
+            <button
+              type="button"
+              onClick={closeModal}
+              disabled={isPending}
+              className="rounded-md bg-[#dc3545] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#b02a37] disabled:opacity-50"
+            >
               Cancelar
             </button>
           </div>
