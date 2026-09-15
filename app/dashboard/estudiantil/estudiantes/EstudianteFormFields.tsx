@@ -10,7 +10,8 @@ import { ArchivoPdfInput } from "@/app/components/ui/ArchivoPdf";
 
 interface EstudianteFormFieldsProps {
   estudiante?: Estudiante | null;
-  representantes: Representante[];
+  representantes?: Representante[];
+  representanteId?: number;
 }
 
 const inputClass =
@@ -18,7 +19,8 @@ const inputClass =
 
 export default function EstudianteFormFields({
   estudiante,
-  representantes,
+  representantes = [],
+  representanteId,
 }: EstudianteFormFieldsProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -205,6 +207,13 @@ export default function EstudianteFormFields({
           ))}
         </select>
       </label>
+    {representanteId !== undefined ? (
+      <input
+        type="hidden"
+        name="ID_representante"
+        value={representanteId}
+      />
+    ) : (
       <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700 sm:col-span-2">
         Representante
         <select
@@ -216,6 +225,7 @@ export default function EstudianteFormFields({
           <option value="" disabled>
             Seleccione un representante
           </option>
+
           {representantes.map((item) => (
             <option key={item.nroCedula} value={item.id}>
               {item.primerApellido} {item.segundoApellido}, {item.primerNombre}{" "}
@@ -224,6 +234,7 @@ export default function EstudianteFormFields({
           ))}
         </select>
       </label>
+    )}
       <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700 sm:col-span-2 lg:col-span-3">
         Dirección
         <input
