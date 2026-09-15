@@ -91,20 +91,6 @@ export default function DocentesPage({
     },
     { header: "Rol", accessorKey: "rol" },
     { header: "Email", accessorKey: "email" },
-    {
-      header: "Estado",
-      cell: (docente) => (
-        <span
-          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-            docente.habilitado
-              ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
-              : "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/10"
-          }`}
-        >
-          {docente.habilitado ? "Activo" : "Inactivo"}
-        </span>
-      ),
-    },
   ];
 
   return (
