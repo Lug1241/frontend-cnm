@@ -2,11 +2,19 @@
 
 import { fetchAPI } from "@/lib/api";
 import { revalidatePath } from "next/cache";
+import { type Representante } from "@/types/Representante";
 
 const REPRESENTANTES_PATH = "/dashboard/estudiantil/representantes";
 
+export interface BuscarRepresentanteResult {
+  success: boolean;
+  data?: Representante | null;
+  error?: string;
+}
+
 export interface RepresentanteActionResult {
   success: boolean;
+  data?: Representante;
   error?: string;
 }
 
@@ -29,17 +37,56 @@ export async function createRepresentante(
 ): Promise<RepresentanteActionResult> {
   try {
     eliminarArchivosVacios(formData);
-
-    await fetchAPI("/representantes/crear", {
-      method: "POST",
-      body: formData,
+    
+    const representante =  await fetchAPI<Representante>(
+      "/representantes/crear", 
+      {
+        method: "POST",
+        body: formData,
     });
+
     revalidatePath(REPRESENTANTES_PATH);
-    return { success: true };
+    
+    return { 
+      success: true,
+      data: representante,
+    };
   } catch (error: unknown) {
     return {
       success: false,
       error: getErrorMessage(error, "No se pudo crear el representante."),
+    };
+  }
+}
+
+export async function getRepresentanteByCedula(
+  nroCedula: string,
+): Promise<BuscarRepresentanteResult> {
+  try {
+    const representante = await fetchAPI<Representante>(
+      `/representantes/obtener/${encodeURIComponent(nroCedula)}`,
+    );
+
+    return {
+      success: true,
+      data: representante,
+    };
+  } catch (error: unknown) {
+    const message = getErrorMessage(
+      error,
+      "No se pudo buscar el representante.",
+    );
+
+    if (message === "Representante no encontrado") {
+      return {
+        success: true,
+        data: null,
+      };
+    }
+
+    return {
+      success: false,
+      error: message,
     };
   }
 }
