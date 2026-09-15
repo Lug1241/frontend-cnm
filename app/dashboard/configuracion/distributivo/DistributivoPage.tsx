@@ -165,7 +165,7 @@ export default function DistributivoPage({
             onClick={() => setIsAddModalOpen(true)}
             className="bg-[#28a745] hover:bg-[#218838] text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
           >
-            <span>+</span> Agregar asignación
+            <span>+</span> Agregar Curso
           </button>
         </div>
       </div>
@@ -205,14 +205,27 @@ export default function DistributivoPage({
 
       {selectedToDelete && (
         <DeleteModal
-          isOpen
+          isOpen={!!selectedToDelete} 
           onClose={() => setSelectedToDelete(null)}
           item={selectedToDelete}
-          title="¿Eliminar asignación?"
+          title="¿Eliminar Curso?"
           getItemName={(item) => `${item.materia?.nombre} - ${item.paralelo}`}
           onDeleteAction={async (id) => {
             const result = await deleteAsignacion(String(id));
-            if (result.success) router.refresh();
+
+            if (result.success) {
+              const paginaActual = Number(searchParams.get('page')) || 1;
+
+              if (asignaciones.length === 1 && paginaActual > 1) {
+                const nuevaPagina = paginaActual - 1;
+                const nuevosParametros = new URLSearchParams(searchParams.toString());
+                nuevosParametros.set('page', nuevaPagina.toString());
+
+                router.push(`${pathname}?${nuevosParametros.toString()}`);
+              } else {
+                router.refresh();
+              }
+            }
             return result;
           }}
           idKey="id"
