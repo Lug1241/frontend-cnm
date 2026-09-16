@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter } from "next/navigation";
 import { type Representante } from "@/types/Representante";
 import EstudianteFormFields from "../estudiantes/EstudianteFormFields";
@@ -24,6 +29,8 @@ interface RepresentantePendiente {
 export default function RegistroEstudiantePage() {
   const router = useRouter();
 
+  const errorRef = useRef<HTMLDivElement>(null);
+
   const [representantePendiente, setRepresentantePendiente] =
     useState<RepresentantePendiente | null>(null);
 
@@ -38,6 +45,23 @@ export default function RegistroEstudiantePage() {
   const [isRepresentanteModalOpen, setIsRepresentanteModalOpen] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const cambiarRepresentante = () => {
+    setRepresentanteSeleccionado(null);
+    setRepresentantePendiente(null);
+    setRepresentanteNoEncontrado(false);
+    setCedulaBusqueda("");
+    setErrorMessage("");
+  };
+
+  useEffect(() => {
+    if (!errorMessage) return;
+
+    errorRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [errorMessage]);
 
   const buscarRepresentante = (
     event: React.FormEvent<HTMLFormElement>,
@@ -173,11 +197,15 @@ export default function RegistroEstudiantePage() {
 
         <div className="space-y-6 p-6">
           {errorMessage && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              ⚠️ {errorMessage}
+            <div
+              ref={errorRef}
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            >
+              {errorMessage}
             </div>
           )}
-
+        {!representanteSeleccionado && !representantePendiente && (
           <form
             onSubmit={buscarRepresentante}
             className="rounded-lg border border-gray-200 bg-gray-50 p-4"
@@ -213,6 +241,7 @@ export default function RegistroEstudiantePage() {
               </button>
             </div>
           </form>
+        )}
 
           {representanteSeleccionado && (
             <div className="rounded-lg border border-green-200 bg-green-50 p-4">
@@ -285,41 +314,76 @@ export default function RegistroEstudiantePage() {
           )}
 
           {(representanteSeleccionado || representantePendiente) && (
-            <form onSubmit={submit} className="space-y-5">
-              <div className="border-t border-gray-200 pt-5">
-                <h3 className="mb-4 text-lg font-semibold text-gray-800">
-                  Datos del estudiante
-                </h3>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-gray-800">
+                      Representante seleccionado
+                    </p>
 
-                <EstudianteFormFields
-                  representanteId={representanteSeleccionado?.id}
-                  ocultarSelectorRepresentante
-                />
-              </div>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        representantePendiente
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {representantePendiente
+                        ? "Nuevo"
+                        : "Registrado"}
+                    </span>
+                  </div>
 
-              <div className="flex flex-wrap justify-center gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="rounded-md bg-[#007bff] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#0056b3] disabled:opacity-50"
-                >
-                  {isSubmitting
-                    ? "Registrando..."
-                    : "Registrar estudiante"}
-                </button>
+                  <p className="mt-1 text-sm text-gray-700">
+                    {(
+                      representanteSeleccionado ??
+                      representantePendiente
+                    )?.primerNombre}{" "}
+                    {(
+                      representanteSeleccionado ??
+                      representantePendiente
+                    )?.segundoNombre}{" "}
+                    {(
+                      representanteSeleccionado ??
+                      representantePendiente
+                    )?.primerApellido}{" "}
+                    {(
+                      representanteSeleccionado ??
+                      representantePendiente
+                    )?.segundoApellido}
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    Cédula:{" "}
+                    {(
+                      representanteSeleccionado ??
+                      representantePendiente
+                    )?.nroCedula}
+                    {" · "}
+                    {(
+                      representanteSeleccionado ??
+                      representantePendiente
+                    )?.email}
+                  </p>
+
+                  {representantePendiente && (
+                    <p className="mt-1 text-xs text-amber-700">
+                      Se registrará al confirmar el estudiante.
+                    </p>
+                  )}
+                </div>
 
                 <button
                   type="button"
-                  onClick={() =>
-                    router.push("/dashboard/estudiantil/estudiantes")
-                  }
+                  onClick={cambiarRepresentante}
                   disabled={isSubmitting}
-                  className="rounded-md bg-gray-200 px-6 py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-300 disabled:opacity-50"
+                  className="self-start rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 sm:self-auto"
                 >
-                  Cancelar
+                  Cambiar representante
                 </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       </div>
