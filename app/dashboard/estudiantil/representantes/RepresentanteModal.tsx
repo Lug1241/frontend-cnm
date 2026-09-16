@@ -9,6 +9,7 @@ interface RepresentanteModalProps {
   isOpen: boolean;
   onClose: () => void;
   representanteToEdit?: Representante | null;
+  nroCedulaUnregistered?: string | null;
   onSaveAction: (
     cedula: string | null,
     formData: FormData,
@@ -26,6 +27,7 @@ export default function RepresentanteModal({
   isOpen,
   onClose,
   representanteToEdit,
+  nroCedulaUnregistered,
   onSaveAction,
 }: RepresentanteModalProps) {
   const [isPending, startTransition] = useTransition();
@@ -33,6 +35,7 @@ export default function RepresentanteModal({
 
   if (!isOpen) return null;
   const isEditing = Boolean(representanteToEdit);
+  const cedulaToEdit = isEditing || Boolean(nroCedulaUnregistered);
 
   const closeModal = () => {
     setErrorMessage(null);
@@ -81,8 +84,10 @@ export default function RepresentanteModal({
                 minLength={7}
                 maxLength={10}
                 required
-                readOnly={isEditing}
-                className={`${inputClass} ${isEditing ? "bg-gray-100 text-gray-500" : ""}`}
+                readOnly={cedulaToEdit}
+                className={`${inputClass} ${
+                  cedulaToEdit ? "bg-gray-100 text-gray-500" : ""
+                }`}
               />
             </label>
             {nameFields.map(([name, label]) => (

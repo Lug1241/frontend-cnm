@@ -74,6 +74,19 @@ export default function RegistroEstudiantePage() {
 
     const formData = new FormData(event.currentTarget);
 
+    const nroCedulaEstudiante = String(
+      formData.get("nroCedula") ?? "",
+    ).trim();
+
+    if (
+      nroCedulaEstudiante === representanteSeleccionado.nroCedula
+    ) {
+      setErrorMessage(
+        "El estudiante no puede tener la misma cédula que el representante.",
+      );
+      return;
+    }
+
     startSubmitTransition(async () => {
       const result = await createEstudiante(formData);
 
@@ -232,6 +245,7 @@ export default function RegistroEstudiantePage() {
       <RepresentanteModal
         isOpen={isRepresentanteModalOpen}
         onClose={() => setIsRepresentanteModalOpen(false)}
+        nroCedulaUnregistered={cedulaBusqueda}
         onSaveAction={async (_cedula, formData) => {
           const result = await createRepresentante(formData);
 
