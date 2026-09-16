@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useTransition } from "react";
 
 interface DeleteModalProps<T, TId extends string | number> {
@@ -6,14 +7,17 @@ interface DeleteModalProps<T, TId extends string | number> {
   onClose: () => void;
   item: T | null;
   title?: string;
-  // Una función que reciba el ítem y devuelva el texto descriptivo que se mostrará en pantalla
   getItemName: (item: T) => string;
-  // La Server Action de eliminación que recibe el ID (string o number)
-  onDeleteAction: (id: TId) => Promise<{ success: boolean; error?: string }>;
-  idKey?: keyof T; // Por defecto asumiremos "id", pero por si usas "ID" en mayúscula
+  onDeleteAction: (
+    id: TId,
+  ) => Promise<{ success: boolean; error?: string }>;
+  idKey?: keyof T;
 }
 
-export default function DeleteModal<T, TId extends string | number = number>({
+export default function DeleteModal<
+  T,
+  TId extends string | number = number,
+>({
   isOpen,
   onClose,
   item,
@@ -27,6 +31,11 @@ export default function DeleteModal<T, TId extends string | number = number>({
 
   if (!isOpen || !item) return null;
 
+  const closeModal = () => {
+    setErrorMessage(null);
+    onClose();
+  };
+
   const handleDelete = () => {
     setErrorMessage(null);
 
@@ -35,46 +44,56 @@ export default function DeleteModal<T, TId extends string | number = number>({
       const result = await onDeleteAction(itemId);
 
       if (result.success) {
-        onClose();
-      } else {
-        setErrorMessage(
-          result.error ?? "No se pudo realizar la acción.",
-        );
+        closeModal();
+        return;
       }
+
+      setErrorMessage(
+        result.error ?? "No se pudo realizar la acción.",
+      );
     });
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 text-center space-y-4 animate-in fade-in zoom-in duration-200">
-        <h3 className="text-lg font-bold text-gray-800">{title}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 text-center shadow-2xl">
+        <h3 className="text-lg font-bold text-gray-800">
+          {title}
+        </h3>
+
         <p className="text-sm text-gray-600">
           ¿Estás seguro de que deseas eliminar a{" "}
-          <span className="font-semibold">{getItemName(item)}</span>? Esta
-          acción no se puede deshacer.
+          <span className="font-semibold">
+            {getItemName(item)}
+          </span>
+          ? Esta acción no se puede deshacer.
         </p>
+
+        {errorMessage && (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="rounded-lg border border-red-200 bg-red-50 p-3 text-left text-sm text-red-700"
+          >
+            {errorMessage}
+          </div>
+        )}
+
         <div className="flex justify-center gap-3 pt-2">
-          {errorMessage && (
-            <div
-              role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-left text-sm text-red-700"
-            >
-              {errorMessage}
-            </div>
-          )}
           <button
             type="button"
             disabled={isDeleting}
             onClick={handleDelete}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50"
+            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
           >
             {isDeleting ? "Eliminando..." : "Sí, eliminar"}
           </button>
+
           <button
             type="button"
             disabled={isDeleting}
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-medium rounded-md transition-colors"
+            onClick={closeModal}
+            className="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 disabled:opacity-50"
           >
             Cancelar
           </button>
