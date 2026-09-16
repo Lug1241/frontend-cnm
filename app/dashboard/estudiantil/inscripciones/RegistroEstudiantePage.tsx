@@ -11,8 +11,21 @@ import {
   getRepresentanteByCedula,
 } from "../representantes/actions";
 
+interface RepresentantePendiente {
+  formData: FormData;
+  nroCedula: string;
+  primerNombre: string;
+  segundoNombre: string;
+  primerApellido: string;
+  segundoApellido: string;
+  email: string;
+}
+
 export default function RegistroEstudiantePage() {
   const router = useRouter();
+
+  const [representantePendiente, setRepresentantePendiente] =
+    useState<RepresentantePendiente | null>(null);
 
   const [isSearching, startSearchTransition] = useTransition();
   const [isSubmitting, startSubmitTransition] = useTransition();
@@ -35,6 +48,7 @@ export default function RegistroEstudiantePage() {
 
     setErrorMessage("");
     setRepresentanteSeleccionado(null);
+    setRepresentantePendiente(null);
     setRepresentanteNoEncontrado(false);
 
     if (!/^\d{7,10}$/.test(cedula)) {
@@ -65,7 +79,7 @@ export default function RegistroEstudiantePage() {
     event.preventDefault();
     setErrorMessage("");
 
-    if (!representanteSeleccionado) {
+    if (!representanteSeleccionado && !representantePendiente) {
       setErrorMessage(
         "Debes seleccionar o registrar un representante antes de crear al estudiante.",
       );
@@ -78,9 +92,11 @@ export default function RegistroEstudiantePage() {
       formData.get("nroCedula") ?? "",
     ).trim();
 
-    if (
-      nroCedulaEstudiante === representanteSeleccionado.nroCedula
-    ) {
+    const nroCedulaRepresentante =
+      representanteSeleccionado?.nroCedula ??
+      representantePendiente?.nroCedula;
+
+    if (nroCedulaEstudiante === nroCedulaRepresentante) {
       setErrorMessage(
         "El estudiante no puede tener la misma cédula que el representante.",
       );
@@ -88,6 +104,44 @@ export default function RegistroEstudiantePage() {
     }
 
     startSubmitTransition(async () => {
+      let representanteId = representanteSeleccionado?.id;
+
+      if (!representanteId && representantePendiente) {
+        const resultadoRepresentante = await createRepresentante(
+          representantePendiente.formData,
+        );
+
+        if (
+          !resultadoRepresentante.success ||
+          !resultadoRepresentante.data
+        ) {
+          setErrorMessage(
+            resultadoRepresentante.error ??
+              "No se pudo registrar el representante.",
+          );
+          return;
+        }
+
+        representanteId = resultadoRepresentante.data.id;
+
+        setRepresentanteSeleccionado(
+          resultadoRepresentante.data,
+        );
+        setRepresentantePendiente(null);
+      }
+
+      if (!representanteId) {
+        setErrorMessage(
+          "No se pudo determinar el representante del estudiante.",
+        );
+        return;
+      }
+
+      formData.set(
+        "ID_representante",
+        String(representanteId),
+      );
+
       const result = await createEstudiante(formData);
 
       if (result.success) {
@@ -183,6 +237,33 @@ export default function RegistroEstudiantePage() {
             </div>
           )}
 
+          {representantePendiente && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+              <p className="font-semibold text-green-800">
+                Representante listo para registrar
+              </p>
+
+              <p className="mt-1 text-sm text-green-700">
+                {representantePendiente.primerNombre}{" "}
+                {representantePendiente.segundoNombre}{" "}
+                {representantePendiente.primerApellido}{" "}
+                {representantePendiente.segundoApellido}
+              </p>
+
+              <p className="text-sm text-green-700">
+                Cédula: {representantePendiente.nroCedula}
+              </p>
+
+              <p className="text-sm text-green-700">
+                Correo: {representantePendiente.email}
+              </p>
+
+              <p className="mt-2 text-xs text-green-700">
+                El representante se registrará al confirmar el registro del estudiante.
+              </p>
+            </div>
+          )}
+
           {representanteNoEncontrado && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
               <p className="font-semibold text-amber-800">
@@ -203,7 +284,7 @@ export default function RegistroEstudiantePage() {
             </div>
           )}
 
-          {representanteSeleccionado && (
+          {(representanteSeleccionado || representantePendiente) && (
             <form onSubmit={submit} className="space-y-5">
               <div className="border-t border-gray-200 pt-5">
                 <h3 className="mb-4 text-lg font-semibold text-gray-800">
@@ -211,7 +292,8 @@ export default function RegistroEstudiantePage() {
                 </h3>
 
                 <EstudianteFormFields
-                  representanteId={representanteSeleccionado.id}
+                  representanteId={representanteSeleccionado?.id}
+                  ocultarSelectorRepresentante
                 />
               </div>
 
@@ -247,15 +329,22 @@ export default function RegistroEstudiantePage() {
         onClose={() => setIsRepresentanteModalOpen(false)}
         nroCedulaUnregistered={cedulaBusqueda}
         onSaveAction={async (_cedula, formData) => {
-          const result = await createRepresentante(formData);
+          const representante: RepresentantePendiente = {
+            formData,
+            nroCedula: String(formData.get("nroCedula") ?? ""),
+            primerNombre: String(formData.get("primerNombre") ?? ""),
+            segundoNombre: String(formData.get("segundoNombre") ?? ""),
+            primerApellido: String(formData.get("primerApellido") ?? ""),
+            segundoApellido: String(formData.get("segundoApellido") ?? ""),
+            email: String(formData.get("email") ?? ""),
+          };
 
-          if (result.success && result.data) {
-            setRepresentanteSeleccionado(result.data);
-            setRepresentanteNoEncontrado(false);
-            setCedulaBusqueda(result.data.nroCedula);
-          }
+          setRepresentantePendiente(representante);
+          setRepresentanteSeleccionado(null);
+          setRepresentanteNoEncontrado(false);
+          setCedulaBusqueda(representante.nroCedula);
 
-          return result;
+          return { success: true };
         }}
       />
     </div>

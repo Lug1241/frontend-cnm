@@ -1,5 +1,5 @@
 "use client";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 interface DeleteModalProps<T, TId extends string | number> {
   isOpen: boolean;
@@ -23,19 +23,23 @@ export default function DeleteModal<T, TId extends string | number = number>({
   idKey = "id" as keyof T,
 }: DeleteModalProps<T, TId>) {
   const [isDeleting, startDeleteTransition] = useTransition();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen || !item) return null;
 
   const handleDelete = () => {
+    setErrorMessage(null);
+
     startDeleteTransition(async () => {
-      // Extraemos dinámicamente el ID usando la llave provista
       const itemId = item[idKey] as unknown as TId;
       const result = await onDeleteAction(itemId);
 
       if (result.success) {
-        onClose(); // Cierra el modal si fue exitoso
+        onClose();
       } else {
-        alert(result.error || "No se pudo realizar la acción.");
+        setErrorMessage(
+          result.error ?? "No se pudo realizar la acción.",
+        );
       }
     });
   };
@@ -50,6 +54,14 @@ export default function DeleteModal<T, TId extends string | number = number>({
           acción no se puede deshacer.
         </p>
         <div className="flex justify-center gap-3 pt-2">
+          {errorMessage && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 p-3 text-left text-sm text-red-700"
+            >
+              {errorMessage}
+            </div>
+          )}
           <button
             type="button"
             disabled={isDeleting}

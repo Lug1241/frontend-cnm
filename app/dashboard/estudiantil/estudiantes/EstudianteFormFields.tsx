@@ -12,15 +12,24 @@ interface EstudianteFormFieldsProps {
   estudiante?: Estudiante | null;
   representantes?: Representante[];
   representanteId?: number;
+  ocultarSelectorRepresentante?: boolean;
 }
 
 const inputClass =
   "rounded-md border border-gray-300 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-[#00408a]";
 
+const convertirAMayusculas = (
+  event: React.FormEvent<HTMLInputElement>,
+) => {
+  event.currentTarget.value =
+    event.currentTarget.value.toUpperCase();
+};
+
 export default function EstudianteFormFields({
   estudiante,
   representantes = [],
   representanteId,
+  ocultarSelectorRepresentante = false,
 }: EstudianteFormFieldsProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -45,6 +54,7 @@ export default function EstudianteFormFields({
           minLength={2}
           maxLength={50}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
@@ -56,6 +66,7 @@ export default function EstudianteFormFields({
           minLength={2}
           maxLength={50}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
@@ -67,6 +78,7 @@ export default function EstudianteFormFields({
           minLength={2}
           maxLength={50}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
@@ -78,6 +90,7 @@ export default function EstudianteFormFields({
           minLength={2}
           maxLength={50}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
@@ -157,6 +170,7 @@ export default function EstudianteFormFields({
           defaultValue={estudiante?.especialidad ?? ""}
           maxLength={255}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
@@ -178,6 +192,7 @@ export default function EstudianteFormFields({
           defaultValue={estudiante?.nacionalidad ?? ""}
           maxLength={255}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
@@ -188,6 +203,7 @@ export default function EstudianteFormFields({
           defaultValue={estudiante?.ier ?? ""}
           maxLength={255}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
@@ -207,12 +223,14 @@ export default function EstudianteFormFields({
           ))}
         </select>
       </label>
-    {representanteId !== undefined ? (
-      <input
-        type="hidden"
-        name="ID_representante"
-        value={representanteId}
-      />
+    {ocultarSelectorRepresentante ? (
+      representanteId !== undefined ? (
+        <input
+          type="hidden"
+          name="ID_representante"
+          value={representanteId}
+        />
+      ) : null
     ) : (
       <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700 sm:col-span-2">
         Representante
@@ -228,8 +246,8 @@ export default function EstudianteFormFields({
 
           {representantes.map((item) => (
             <option key={item.nroCedula} value={item.id}>
-              {item.primerApellido} {item.segundoApellido}, {item.primerNombre}{" "}
-              {item.segundoNombre} — {item.nroCedula}
+              {item.primerApellido} {item.segundoApellido},{" "}
+              {item.primerNombre} {item.segundoNombre} — {item.nroCedula}
             </option>
           ))}
         </select>
@@ -242,6 +260,7 @@ export default function EstudianteFormFields({
           defaultValue={estudiante?.direccion ?? ""}
           maxLength={255}
           required
+          onInput={convertirAMayusculas}
           className={inputClass}
         />
       </label>
