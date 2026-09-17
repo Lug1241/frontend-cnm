@@ -1,6 +1,7 @@
 "use server";
 
 import { fetchAPI } from "@/lib/api";
+import { error } from "console";
 import { revalidatePath } from "next/cache";
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -18,6 +19,13 @@ function formatPayload(formData: any) {
 }
 
 export async function createAsignacion(formData: any) {
+  if (!formData.ID_periodo_academico || formData.ID_periodo_academico === "") {
+    return {
+      success: false,
+      error: getErrorMessage(error, 'El período académico es obligatorio.'),
+    };
+  }
+
   try {
     await fetchAPI("/asignaciones/crear", {
       method: "POST",
