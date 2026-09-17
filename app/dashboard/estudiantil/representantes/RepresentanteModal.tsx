@@ -9,6 +9,7 @@ interface RepresentanteModalProps {
   isOpen: boolean;
   onClose: () => void;
   representanteToEdit?: Representante | null;
+  nroCedulaUnregistered?: string | null;
   onSaveAction: (
     cedula: string | null,
     formData: FormData,
@@ -26,6 +27,7 @@ export default function RepresentanteModal({
   isOpen,
   onClose,
   representanteToEdit,
+  nroCedulaUnregistered,
   onSaveAction,
 }: RepresentanteModalProps) {
   const [isPending, startTransition] = useTransition();
@@ -33,6 +35,7 @@ export default function RepresentanteModal({
 
   if (!isOpen) return null;
   const isEditing = Boolean(representanteToEdit);
+  const cedulaToEdit = isEditing || Boolean(nroCedulaUnregistered);
 
   const closeModal = () => {
     setErrorMessage(null);
@@ -56,6 +59,13 @@ export default function RepresentanteModal({
   const inputClass =
     "rounded-md border border-gray-300 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-[#00408a]";
 
+  const convertirAMayusculas = (
+    event: React.FormEvent<HTMLInputElement>,
+  ) => {
+    event.currentTarget.value =
+      event.currentTarget.value.toUpperCase();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm">
       <div className="my-4 w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-2xl">
@@ -75,14 +85,20 @@ export default function RepresentanteModal({
               Nro. cédula
               <input
                 name="nroCedula"
-                defaultValue={representanteToEdit?.nroCedula ?? ""}
+                defaultValue={
+                  representanteToEdit?.nroCedula ??
+                  nroCedulaUnregistered ??
+                  ""
+                }
                 inputMode="numeric"
                 pattern="[0-9]{7,10}"
                 minLength={7}
                 maxLength={10}
                 required
-                readOnly={isEditing}
-                className={`${inputClass} ${isEditing ? "bg-gray-100 text-gray-500" : ""}`}
+                readOnly={cedulaToEdit}
+                className={`${inputClass} ${
+                  cedulaToEdit ? "bg-gray-100 text-gray-500" : ""
+                }`}
               />
             </label>
             {nameFields.map(([name, label]) => (
@@ -97,6 +113,7 @@ export default function RepresentanteModal({
                   minLength={2}
                   maxLength={50}
                   required
+                  onInput={convertirAMayusculas}
                   className={inputClass}
                 />
               </label>
@@ -111,6 +128,7 @@ export default function RepresentanteModal({
                 minLength={10}
                 maxLength={10}
                 required
+                onInput={convertirAMayusculas}
                 className={inputClass}
               />
             </label>
