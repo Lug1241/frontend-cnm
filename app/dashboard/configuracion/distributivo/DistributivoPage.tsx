@@ -163,7 +163,13 @@ export default function DistributivoPage({
           {/* Botón Agregar */}
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#28a745] hover:bg-[#218838] text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+            disabled={!currentPeriodo}
+            title={!currentPeriodo ? "Seleccione un periodo académico primero" : ""}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap ${
+              currentPeriodo 
+                ? "bg-[#28a745] hover:bg-[#218838] text-white" 
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             <span>+</span> Agregar Curso
           </button>

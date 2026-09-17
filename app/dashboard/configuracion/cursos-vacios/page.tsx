@@ -47,7 +47,7 @@ export default async function CursosVaciosRoute({
     if (response.totalPages > 1) {
       redirectParams.set("page", String(response.totalPages));
     }
-    redirect(`/dashboard/cursos_vacios?${redirectParams.toString()}`);
+    redirect(`/dashboard/cursos-vacios?${redirectParams.toString()}`);
   }
 
   return (
