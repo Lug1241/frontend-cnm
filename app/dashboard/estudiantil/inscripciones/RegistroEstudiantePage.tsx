@@ -34,14 +34,22 @@ export default function RegistroEstudiantePage() {
   const [isSubmitting, startSubmitTransition] = useTransition();
 
   const [cedulaBusqueda, setCedulaBusqueda] = useState("");
+
+  const [cedulaInicialRepresentante, setCedulaInicialRepresentante] =
+    useState<string | null>(null);
+
   const [representanteSeleccionado, setRepresentanteSeleccionado] =
     useState<Representante | null>(null);
+
   const [representantePendiente, setRepresentantePendiente] =
     useState<RepresentantePendiente | null>(null);
+
   const [representanteNoEncontrado, setRepresentanteNoEncontrado] =
     useState(false);
+
   const [isRepresentanteModalOpen, setIsRepresentanteModalOpen] =
     useState(false);
+
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -53,11 +61,29 @@ export default function RegistroEstudiantePage() {
     });
   }, [errorMessage]);
 
+  const abrirRegistroRepresentanteNuevo = () => {
+    setCedulaInicialRepresentante(null);
+    setErrorMessage("");
+    setIsRepresentanteModalOpen(true);
+  };
+
+  const abrirRegistroRepresentanteBuscado = () => {
+    setCedulaInicialRepresentante(cedulaBusqueda.trim());
+    setErrorMessage("");
+    setIsRepresentanteModalOpen(true);
+  };
+
+  const cerrarModalRepresentante = () => {
+    setIsRepresentanteModalOpen(false);
+    setCedulaInicialRepresentante(null);
+  };
+
   const cambiarRepresentante = () => {
     setRepresentanteSeleccionado(null);
     setRepresentantePendiente(null);
     setRepresentanteNoEncontrado(false);
     setCedulaBusqueda("");
+    setCedulaInicialRepresentante(null);
     setErrorMessage("");
   };
 
@@ -123,9 +149,7 @@ export default function RegistroEstudiantePage() {
       representanteSeleccionado?.nroCedula ??
       representantePendiente?.nroCedula;
 
-    if (
-      nroCedulaEstudiante === nroCedulaRepresentante
-    ) {
+    if (nroCedulaEstudiante === nroCedulaRepresentante) {
       setErrorMessage(
         "El estudiante no puede tener la misma cédula que el representante.",
       );
@@ -158,6 +182,7 @@ export default function RegistroEstudiantePage() {
         setRepresentanteSeleccionado(
           resultadoRepresentante.data,
         );
+
         setRepresentantePendiente(null);
       }
 
@@ -179,6 +204,7 @@ export default function RegistroEstudiantePage() {
         router.push(
           "/dashboard/estudiantil/estudiantes?toast=estudiante-creado",
         );
+
         router.refresh();
         return;
       }
@@ -194,16 +220,16 @@ export default function RegistroEstudiantePage() {
     representanteSeleccionado ?? representantePendiente;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-6xl rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="w-full">
+      <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-100 px-6 py-5">
           <h2 className="text-2xl font-bold text-[#00408a]">
             Registrar estudiante
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Busca primero al representante para continuar con
-            el registro del estudiante.
+            Selecciona un representante existente o registra uno
+            nuevo para continuar con el estudiante.
           </p>
         </div>
 
@@ -219,15 +245,53 @@ export default function RegistroEstudiantePage() {
             </div>
           )}
 
-          {!representanteSeleccionado &&
-            !representantePendiente && (
+          {!representanteActual && (
+            <>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Registrar representante
+                    </h3>
+
+                    <p className="mt-1 text-sm text-gray-500">
+                      Si el representante todavía no está registrado,
+                      puedes crearlo ahora.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={abrirRegistroRepresentanteNuevo}
+                    className="self-start rounded-md bg-[#007bff] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0056b3] sm:self-auto"
+                  >
+                    Registrar representante
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="h-px flex-1 bg-gray-200" />
+
+                <span className="text-sm font-medium text-gray-400">
+                  O
+                </span>
+
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+
               <form
                 onSubmit={buscarRepresentante}
                 className="rounded-lg border border-gray-200 bg-gray-50 p-4"
               >
-                <h3 className="mb-3 text-lg font-semibold text-gray-800">
-                  Buscar representante
+                <h3 className="mb-1 text-lg font-semibold text-gray-800">
+                  Buscar representante existente
                 </h3>
+
+                <p className="mb-4 text-sm text-gray-500">
+                  Busca por número de cédula a un representante que
+                  ya esté registrado.
+                </p>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                   <label className="flex flex-1 flex-col gap-1.5 text-sm font-semibold text-gray-700">
@@ -239,9 +303,8 @@ export default function RegistroEstudiantePage() {
                         setCedulaBusqueda(
                           event.target.value,
                         );
-                        setRepresentanteNoEncontrado(
-                          false,
-                        );
+
+                        setRepresentanteNoEncontrado(false);
                         setErrorMessage("");
                       }}
                       inputMode="numeric"
@@ -265,31 +328,29 @@ export default function RegistroEstudiantePage() {
                   </button>
                 </div>
               </form>
-            )}
 
-          {representanteNoEncontrado &&
-            !representanteActual && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-                <p className="font-semibold text-amber-800">
-                  Representante no encontrado
-                </p>
+              {representanteNoEncontrado && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <p className="font-semibold text-amber-800">
+                    Representante no encontrado
+                  </p>
 
-                <p className="mt-1 text-sm text-amber-700">
-                  No existe un representante registrado con
-                  la cédula ingresada.
-                </p>
+                  <p className="mt-1 text-sm text-amber-700">
+                    No existe un representante registrado con la
+                    cédula ingresada.
+                  </p>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setIsRepresentanteModalOpen(true)
-                  }
-                  className="mt-3 rounded-md bg-[#007bff] px-5 py-2 text-sm font-medium text-white hover:bg-[#0056b3]"
-                >
-                  Agregar representante
-                </button>
-              </div>
-            )}
+                  <button
+                    type="button"
+                    onClick={abrirRegistroRepresentanteBuscado}
+                    className="mt-3 rounded-md bg-[#007bff] px-5 py-2 text-sm font-medium text-white hover:bg-[#0056b3]"
+                  >
+                    Registrar con esta cédula
+                  </button>
+                </div>
+              )}
+            </>
+          )}
 
           {representanteActual && (
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
@@ -329,8 +390,7 @@ export default function RegistroEstudiantePage() {
 
                   {representantePendiente && (
                     <p className="mt-1 text-xs text-amber-700">
-                      Se registrará al confirmar el
-                      estudiante.
+                      Se registrará al confirmar el estudiante.
                     </p>
                   )}
                 </div>
@@ -396,28 +456,34 @@ export default function RegistroEstudiantePage() {
 
       <RepresentanteModal
         isOpen={isRepresentanteModalOpen}
-        onClose={() =>
-          setIsRepresentanteModalOpen(false)
+        onClose={cerrarModalRepresentante}
+        nroCedulaUnregistered={
+          cedulaInicialRepresentante
         }
-        nroCedulaUnregistered={cedulaBusqueda}
         onSaveAction={async (_cedula, formData) => {
           const representante: RepresentantePendiente = {
             formData,
+
             nroCedula: String(
               formData.get("nroCedula") ?? "",
             ),
+
             primerNombre: String(
               formData.get("primerNombre") ?? "",
             ),
+
             segundoNombre: String(
               formData.get("segundoNombre") ?? "",
             ),
+
             primerApellido: String(
               formData.get("primerApellido") ?? "",
             ),
+
             segundoApellido: String(
               formData.get("segundoApellido") ?? "",
             ),
+
             email: String(
               formData.get("email") ?? "",
             ),
@@ -426,6 +492,7 @@ export default function RegistroEstudiantePage() {
           setRepresentantePendiente(representante);
           setRepresentanteSeleccionado(null);
           setRepresentanteNoEncontrado(false);
+
           setCedulaBusqueda(
             representante.nroCedula,
           );
