@@ -121,11 +121,28 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedTypes: ["docente", "representante"],
   },
   {
-    id: "matriculacion-grupales",
-    label: "Matriculacion materias grupales",
+    id: "matriculacion",
+    label: "Matriculación",
     icon: "✏️",
-    path: "/dashboard/matriculacion/grupales",
+    path: "/dashboard/matriculacion",
     allowedTypes: ["docente", "representante"],
+    submodules: [
+      {
+        id: "matriculacion-grupales",
+        label: "Grupales",
+        path: "/dashboard/matriculacion/grupales",
+        icon: "👥",
+        allowedTypes: ["docente", "representante"],
+      },
+      {
+        id: "matriculacion-individuales",
+        label: "Individuales",
+        path: "/dashboard/matriculacion/individuales",
+        icon: "👤",
+        allowedTypes: ["docente"],
+        allowedRoles: ["Administrador"],
+      },
+    ],
   },
 ];
 
