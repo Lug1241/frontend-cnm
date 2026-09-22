@@ -8,7 +8,7 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
-function formatPayload(formData: any) {
+function formatPayload(formData: Record<string, unknown>) {
     return {
         ...formData,
         ID_docente: String(formData.ID_docente),
@@ -18,7 +18,7 @@ function formatPayload(formData: any) {
     };
 }
 
-export async function createAsignacion(formData: any) {
+export async function createAsignacion(formData: Record<string, unknown>) {
   if (!formData.ID_periodo_academico || formData.ID_periodo_academico === "") {
     return {
       success: false,
@@ -41,7 +41,7 @@ export async function createAsignacion(formData: any) {
   }
 }
 
-export async function updateAsignacion(id: string | number, formData: any) {
+export async function updateAsignacion(id: string | number, formData: Record<string, unknown>) {
   try {
     await fetchAPI(`/asignaciones/editar/${id}`, {
       method: "PUT",
