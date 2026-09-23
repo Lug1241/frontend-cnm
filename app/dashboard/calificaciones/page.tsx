@@ -61,12 +61,6 @@ export default async function CalificacionesPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-[#00408a]">
           Cursos
         </h1>
-
-        {periodoActivo && (
-          <p className="mt-2 text-sm text-gray-500">
-            Período académico: {periodoActivo.descripcion}
-          </p>
-        )}
       </div>
 
       {errorMessage ? (

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
@@ -23,6 +22,16 @@ interface EstudianteAsignacion {
   idEstudiante: number;
   nombreCompleto: string;
   nivel: string;
+}
+
+function determinarJornada(horaInicio?: string) {
+  if (!horaInicio) return "—";
+
+  const hora = Number(horaInicio.split(":")[0]);
+
+  if (Number.isNaN(hora)) return "—";
+
+  return hora < 12 ? "Matutina" : "Vespertina";
 }
 
 export default async function CursoCalificacionesPage({
@@ -116,14 +125,7 @@ export default async function CursoCalificacionesPage({
   return (
     <div className="w-full p-4 sm:p-8">
       <div className="mb-6">
-        <Link
-          href="/dashboard/calificaciones"
-          className="text-sm font-medium text-[#00408a] hover:underline"
-        >
-          ← Volver a cursos
-        </Link>
-
-        <h1 className="mt-4 text-2xl font-bold text-[#00408a] sm:text-3xl">
+        <h1 className="text-center text-2xl font-bold text-[#00408a] sm:text-3xl">
           Gestión de Calificaciones
         </h1>
       </div>
@@ -167,8 +169,8 @@ export default async function CursoCalificacionesPage({
           </div>
 
           <div>
-            <strong>Asignaciones:</strong>{" "}
-            {curso.asignaciones.length}
+            <strong>Jornada:</strong>{" "}
+            {determinarJornada(curso.asignaciones[0]?.horaInicio)}
           </div>
         </div>
       </div>
