@@ -47,25 +47,30 @@ export default async function CursoCalificacionesPage({
 }) {
   const { cursoId } = await params;
 
-  const docenteActual = await getCurrentDocente();
+  const [
+    docenteActual,
+    periodoActivo,
+    fechasResponse,
+  ] = await Promise.all([
+    getCurrentDocente(),
 
-  const periodoActivo =
-    await fetchAPI<PeriodoAcademico>(
+    fetchAPI<PeriodoAcademico>(
       "/periodo_academico/activo",
-    );
+    ),
 
-  let fechasNotas: FechaProceso[] = [];
-
-  try {
-    const fechasResponse =
-      await fetchAPI<FechasProcesosResponse>(
-        "/fechas_procesos/obtener?page=1&limit=20&search=fechas_notas",
+    fetchAPI<FechasProcesosResponse>(
+      "/fechas_procesos/obtener?page=1&limit=20&search=fechas_notas",
+    ).catch((error) => {
+      console.error(
+        "Error cargando fechas de notas:",
+        error,
       );
 
-    fechasNotas = fechasResponse.data ?? [];
-  } catch (error) {
-    console.error("Error cargando fechas de notas:", error);
-  }
+      return {
+        data: [] as FechaProceso[],
+      };
+    }),
+  ]);
 
   const response =
     await fetchAPI<AsignacionesResponse>(
@@ -123,7 +128,7 @@ export default async function CursoCalificacionesPage({
       }));
 
     const nombreDocente =
-    `${docenteActual.primerNombre} ${docenteActual.primerApellido}`.trim();
+      `${docenteActual.primerNombre} ${docenteActual.primerApellido}`.trim();
 
   return (
     <div className="w-full p-4 sm:p-8">
@@ -136,7 +141,7 @@ export default async function CursoCalificacionesPage({
       <GradesWorkspace
         estudiantes={estudiantes}
         esBE={curso.tipoNivel === "BE"}
-        fechasNotas={fechasNotas}
+        fechasNotas={fechasResponse.data ?? []}
         nombreDocente={nombreDocente}
         nombreMateria={curso.nombreMateria}
         tipoNivel={curso.tipoNivel}
