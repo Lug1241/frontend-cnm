@@ -6,14 +6,20 @@ import { Asignacion } from "@/types/Asignacion";
 import { PeriodoAcademico } from "@/types/PeriodoAcademico";
 import { EstudianteCurso } from "@/types/Calificaciones";
 
+import type { FechaProceso } from "@/types/FechaProceso";
+import GradesWorkspace from "./GradesWorkspace";
+
 import {
   agruparCursos,
 } from "../_lib/cursos";
 
-import PartialGradesTable from "./PartialGradesTable";
 
 interface AsignacionesResponse {
   data: Asignacion[];
+}
+
+interface FechasProcesosResponse {
+  data: FechaProceso[];
 }
 
 interface EstudianteAsignacion {
@@ -47,6 +53,19 @@ export default async function CursoCalificacionesPage({
     await fetchAPI<PeriodoAcademico>(
       "/periodo_academico/activo",
     );
+
+  let fechasNotas: FechaProceso[] = [];
+
+  try {
+    const fechasResponse =
+      await fetchAPI<FechasProcesosResponse>(
+        "/fechas_procesos/obtener?page=1&limit=20&search=fechas_notas",
+      );
+
+    fechasNotas = fechasResponse.data ?? [];
+  } catch (error) {
+    console.error("Error cargando fechas de notas:", error);
+  }
 
   const response =
     await fetchAPI<AsignacionesResponse>(
@@ -118,12 +137,7 @@ export default async function CursoCalificacionesPage({
         <h2 className="text-center text-xl font-bold">
           CONSERVATORIO NACIONAL DE MÚSICA
         </h2>
-
-        <h3 className="mt-1 text-center font-semibold">
-          ACTA DE CALIFICACIONES PRIMER PARCIAL -
-          PRIMER QUIMESTRE
-        </h3>
-
+        
         <div className="mt-5 grid gap-2 text-sm md:grid-cols-2">
           <div>
             <strong>Profesor:</strong>{" "}
@@ -159,9 +173,10 @@ export default async function CursoCalificacionesPage({
         </div>
       </div>
 
-      <PartialGradesTable
+      <GradesWorkspace
         estudiantes={estudiantes}
         esBE={curso.tipoNivel === "BE"}
+        fechasNotas={fechasNotas}
       />
     </div>
   );
