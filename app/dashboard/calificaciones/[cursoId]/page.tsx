@@ -1,0 +1,182 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
+
+import { fetchAPI } from "@/lib/api";
+import { Asignacion } from "@/types/Asignacion";
+import { PeriodoAcademico } from "@/types/PeriodoAcademico";
+import { EstudianteCurso } from "@/types/Calificaciones";
+
+import {
+  agruparCursos,
+} from "../_lib/cursos";
+
+import PartialGradesTable from "./PartialGradesTable";
+
+interface AsignacionesResponse {
+  data: Asignacion[];
+}
+
+interface EstudianteAsignacion {
+  nro: number;
+  idInscripcion: number;
+  idEstudiante: number;
+  nombreCompleto: string;
+  nivel: string;
+}
+
+export default async function CursoCalificacionesPage({
+  params,
+}: {
+  params: Promise<{ cursoId: string }>;
+}) {
+  const { cursoId } = await params;
+
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    return (
+      <div className="p-8">
+        <p className="text-red-600">
+          No se pudo identificar al docente autenticado.
+        </p>
+      </div>
+    );
+  }
+
+  const periodoActivo =
+    await fetchAPI<PeriodoAcademico>(
+      "/periodo_academico/activo",
+    );
+
+  const response =
+    await fetchAPI<AsignacionesResponse>(
+      `/asignaciones/docente/${userId}`,
+    );
+
+  const asignacionesPeriodo = (response.data ?? []).filter(
+    (asignacion) =>
+      asignacion.periodoAcademico?.id === periodoActivo.id,
+  );
+
+  const cursos = agruparCursos(asignacionesPeriodo);
+
+  const curso = cursos.find(
+    (item) => item.id === cursoId,
+  );
+
+  if (!curso) {
+    notFound();
+  }
+
+  const respuestas = await Promise.all(
+    curso.asignaciones
+      .filter(
+        (
+          asignacion,
+        ): asignacion is Asignacion & { id: number } =>
+          typeof asignacion.id === "number",
+      )
+      .map(async (asignacion) => {
+        const estudiantes =
+          await fetchAPI<EstudianteAsignacion[]>(
+            `/inscripcion/asignacion/${asignacion.id}`,
+          );
+
+        return estudiantes.map((estudiante) => ({
+          ...estudiante,
+          idAsignacion: asignacion.id,
+        }));
+      }),
+  );
+
+  const estudiantes: EstudianteCurso[] =
+    respuestas
+      .flat()
+      .sort((a, b) =>
+        a.nombreCompleto.localeCompare(
+          b.nombreCompleto,
+          "es",
+        ),
+      )
+      .map((estudiante, index) => ({
+        ...estudiante,
+        nro: index + 1,
+      }));
+
+  const docente = curso.asignaciones[0]?.docente;
+
+  const nombreDocente = docente
+    ? `${docente.primerNombre ?? ""} ${
+        docente.primerApellido ?? ""
+      }`.trim()
+    : "";
+
+  return (
+    <div className="w-full p-4 sm:p-8">
+      <div className="mb-6">
+        <Link
+          href="/dashboard/calificaciones"
+          className="text-sm font-medium text-[#00408a] hover:underline"
+        >
+          ← Volver a cursos
+        </Link>
+
+        <h1 className="mt-4 text-2xl font-bold text-[#00408a] sm:text-3xl">
+          Gestión de Calificaciones
+        </h1>
+      </div>
+
+      <div className="mb-6 rounded-md border border-gray-200 bg-white p-5">
+        <h2 className="text-center text-xl font-bold">
+          CONSERVATORIO NACIONAL DE MÚSICA
+        </h2>
+
+        <h3 className="mt-1 text-center font-semibold">
+          ACTA DE CALIFICACIONES PRIMER PARCIAL -
+          PRIMER QUIMESTRE
+        </h3>
+
+        <div className="mt-5 grid gap-2 text-sm md:grid-cols-2">
+          <div>
+            <strong>Profesor:</strong>{" "}
+            {nombreDocente || "—"}
+          </div>
+
+          <div>
+            <strong>Asignatura:</strong>{" "}
+            {curso.nombreMateria}
+          </div>
+
+          <div>
+            <strong>Curso:</strong>{" "}
+            Niveles {curso.tipoNivel}
+          </div>
+
+          <div>
+            <strong>Paralelo:</strong>{" "}
+            {curso.asignaciones.length > 1
+              ? "Múltiples"
+              : curso.asignaciones[0]?.paralelo || "—"}
+          </div>
+
+          <div>
+            <strong>Año Lectivo:</strong>{" "}
+            {periodoActivo.descripcion}
+          </div>
+
+          <div>
+            <strong>Asignaciones:</strong>{" "}
+            {curso.asignaciones.length}
+          </div>
+        </div>
+      </div>
+
+      <PartialGradesTable
+        estudiantes={estudiantes}
+        esBE={curso.tipoNivel === "BE"}
+      />
+    </div>
+  );
+}

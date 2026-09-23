@@ -1,106 +1,15 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
+
 import { fetchAPI } from "@/lib/api";
 import { Asignacion } from "@/types/Asignacion";
 import { PeriodoAcademico } from "@/types/PeriodoAcademico";
 
+import { agruparCursos } from "./_lib/cursos";
+
 interface AsignacionesResponse {
   data: Asignacion[];
   totalRows: number;
-}
-
-interface CursoDocente {
-  id: string;
-  nombreMateria: string;
-  tipoNivel: "BE" | "Superior";
-  tipo: "Grupal" | "Individual";
-  asignaciones: Asignacion[];
-}
-
-const NIVELES_AGRUPACION = [
-  "BCH",
-  "BM",
-  "BS",
-  "BS BCH",
-  "BE",
-  "BM BS",
-  "BM BS BCH",
-];
-
-function esNivelBE(nivel?: string) {
-  return Boolean(nivel?.toUpperCase().includes("BE"));
-}
-
-function normalizarTexto(texto: string) {
-  return texto.trim().replace(/\s+/g, " ").toLowerCase();
-}
-
-function agruparCursos(asignaciones: Asignacion[]): CursoDocente[] {
-  const paraAgrupar = asignaciones.filter((asignacion) => {
-    const tipo = asignacion.materia?.tipo ?? "Grupal";
-    const nivel = asignacion.materia?.nivel ?? "";
-
-    return (
-      tipo.toLowerCase() === "individual" ||
-      NIVELES_AGRUPACION.includes(nivel)
-    );
-  });
-
-  const sueltos = asignaciones
-    .filter((asignacion) => {
-      const tipo = asignacion.materia?.tipo ?? "Grupal";
-      const nivel = asignacion.materia?.nivel ?? "";
-
-      return (
-        tipo.toLowerCase() === "grupal" &&
-        !NIVELES_AGRUPACION.includes(nivel)
-      );
-    })
-    .map((asignacion, index): CursoDocente => {
-      const materia = asignacion.materia?.nombre ?? "Sin materia";
-      const nivel = asignacion.materia?.nivel ?? "";
-
-      return {
-        id: String(
-          asignacion.id ??
-            `curso-${normalizarTexto(materia)}-${index}`,
-        ),
-        nombreMateria: materia,
-        tipoNivel: esNivelBE(nivel) ? "BE" : "Superior",
-        tipo: "Grupal",
-        asignaciones: [asignacion],
-      };
-    });
-
-  const grupos = new Map<string, CursoDocente>();
-
-  paraAgrupar.forEach((asignacion) => {
-    const materia = asignacion.materia?.nombre ?? "Sin materia";
-    const nivel = asignacion.materia?.nivel ?? "";
-    const tipoNivel = esNivelBE(nivel) ? "BE" : "Superior";
-    const tipo =
-      asignacion.materia?.tipo?.toLowerCase() === "individual"
-        ? "Individual"
-        : "Grupal";
-
-    const key = `${normalizarTexto(materia)}_${tipoNivel}`;
-
-    const existente = grupos.get(key);
-
-    if (existente) {
-      existente.asignaciones.push(asignacion);
-      return;
-    }
-
-    grupos.set(key, {
-      id: `grupo-${normalizarTexto(materia)}-${tipoNivel.toLowerCase()}`,
-      nombreMateria: materia,
-      tipoNivel,
-      tipo,
-      asignaciones: [asignacion],
-    });
-  });
-
-  return [...sueltos, ...grupos.values()];
 }
 
 export default async function CalificacionesPage() {
@@ -171,24 +80,25 @@ export default async function CalificacionesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {cursos.map((curso) => (
-            <div
-              key={curso.id}
-              className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-gray-100 bg-white p-6 text-center shadow-md transition-shadow hover:shadow-lg"
+            <Link
+            key={curso.id}
+            href={`/dashboard/calificaciones/${curso.id}`}
+            className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-gray-100 bg-white p-6 text-center shadow-md transition-all hover:-translate-y-1 hover:shadow-lg"
             >
-              <span className="mb-4 text-5xl">📖</span>
+            <span className="mb-4 text-5xl">📖</span>
 
-              <h2 className="font-bold text-gray-800">
+            <h2 className="font-bold text-gray-800">
                 Curso: {curso.nombreMateria}
-              </h2>
+            </h2>
 
-              <p className="mt-2 text-gray-700">
+            <p className="mt-2 text-gray-700">
                 Nivel: {curso.tipoNivel}
-              </p>
+            </p>
 
-              <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600">
                 {curso.asignaciones.length} asignación(es)
-              </p>
-            </div>
+            </p>
+            </Link>
           ))}
         </div>
       )}
