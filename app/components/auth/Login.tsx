@@ -47,12 +47,6 @@ export default function Login() {
         document.cookie = `rol=${data.rol}; path=/; max-age=86400; SameSite=Strict`;
       }
 
-      if (data.type === "docente" && data.id) {
-        document.cookie = `userId=${data.id}; path=/; max-age=86400; SameSite=Strict`;
-      } else {
-        document.cookie = "userId=; path=/; max-age=0; SameSite=Strict";
-      }
-
       window.location.href = "/dashboard";
       
     } catch (err: unknown) {

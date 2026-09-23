@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 
 import { fetchAPI } from "@/lib/api";
 import { Asignacion } from "@/types/Asignacion";
 import { PeriodoAcademico } from "@/types/PeriodoAcademico";
 
+import { getCurrentDocente } from "./_lib/docente";
 import { agruparCursos } from "./_lib/cursos";
 
 interface AsignacionesResponse {
@@ -13,32 +13,19 @@ interface AsignacionesResponse {
 }
 
 export default async function CalificacionesPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("userId")?.value;
-
-  if (!userId) {
-    return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold text-[#00408a]">Calificaciones</h1>
-
-        <p className="mt-4 text-red-600">
-          No se pudo identificar al docente autenticado.
-        </p>
-      </div>
-    );
-  }
-
+  const docente = await getCurrentDocente();
+  
   let periodoActivo: PeriodoAcademico | null = null;
   let asignaciones: Asignacion[] = [];
   let errorMessage: string | null = null;
 
   try {
     periodoActivo = await fetchAPI<PeriodoAcademico>(
-      "/periodo_academico/activo",
+    "/periodo_academico/activo",
     );
 
     const response = await fetchAPI<AsignacionesResponse>(
-      `/asignaciones/docente/${userId}`,
+    `/asignaciones/docente/${docente.id}`,
     );
 
     asignaciones = (response.data ?? []).filter(

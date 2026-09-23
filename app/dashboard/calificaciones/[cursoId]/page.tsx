@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { getCurrentDocente } from "../_lib/docente";
 
 import { fetchAPI } from "@/lib/api";
 import { Asignacion } from "@/types/Asignacion";
@@ -41,18 +41,7 @@ export default async function CursoCalificacionesPage({
 }) {
   const { cursoId } = await params;
 
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("userId")?.value;
-
-  if (!userId) {
-    return (
-      <div className="p-8">
-        <p className="text-red-600">
-          No se pudo identificar al docente autenticado.
-        </p>
-      </div>
-    );
-  }
+  const docenteActual = await getCurrentDocente();
 
   const periodoActivo =
     await fetchAPI<PeriodoAcademico>(
@@ -61,7 +50,7 @@ export default async function CursoCalificacionesPage({
 
   const response =
     await fetchAPI<AsignacionesResponse>(
-      `/asignaciones/docente/${userId}`,
+      `/asignaciones/docente/${docenteActual.id}`,
     );
 
   const asignacionesPeriodo = (response.data ?? []).filter(
@@ -114,13 +103,8 @@ export default async function CursoCalificacionesPage({
         nro: index + 1,
       }));
 
-  const docente = curso.asignaciones[0]?.docente;
-
-  const nombreDocente = docente
-    ? `${docente.primerNombre ?? ""} ${
-        docente.primerApellido ?? ""
-      }`.trim()
-    : "";
+    const nombreDocente =
+    `${docenteActual.primerNombre} ${docenteActual.primerApellido}`.trim();
 
   return (
     <div className="w-full p-4 sm:p-8">
