@@ -16,6 +16,13 @@ interface Props {
   estudiantes: EstudianteCurso[];
   esBE: boolean;
   fechasNotas: FechaProceso[];
+
+  nombreDocente: string;
+  nombreMateria: string;
+  tipoNivel: string;
+  paralelo: string;
+  periodo: string;
+  jornada: string;
 }
 
 type MainTab =
@@ -96,6 +103,12 @@ export default function GradesWorkspace({
   estudiantes,
   esBE,
   fechasNotas,
+  nombreDocente,
+  nombreMateria,
+  tipoNivel,
+  paralelo,
+  periodo,
+  jornada,
 }: Props) {
   const [escalaBE, setEscalaBE] =
     useState<"Cualitativa" | "Cuantitativa">(
@@ -134,9 +147,41 @@ export default function GradesWorkspace({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-center font-semibold">
-        {subtitulo}
-      </h3>
+      <div className="rounded-md border border-gray-200 bg-white p-5">
+        <h2 className="text-center text-xl font-bold">
+          CONSERVATORIO NACIONAL DE MÚSICA
+        </h2>
+
+        <h3 className="mt-1 text-center font-semibold">
+          {subtitulo}
+        </h3>
+
+        <div className="mt-5 grid gap-2 text-sm md:grid-cols-2">
+          <div>
+            <strong>Profesor:</strong> {nombreDocente || "—"}
+          </div>
+
+          <div>
+            <strong>Asignatura:</strong> {nombreMateria}
+          </div>
+
+          <div>
+            <strong>Curso:</strong> Niveles {tipoNivel}
+          </div>
+
+          <div>
+            <strong>Paralelo:</strong> {paralelo}
+          </div>
+
+          <div>
+            <strong>Año Lectivo:</strong> {periodo}
+          </div>
+
+          <div>
+            <strong>Jornada:</strong> {jornada}
+          </div>
+        </div>
+      </div>
 
       {esBE && (
         <div className="flex justify-end">

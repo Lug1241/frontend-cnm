@@ -133,50 +133,22 @@ export default async function CursoCalificacionesPage({
         </h1>
       </div>
 
-      <div className="mb-6 rounded-md border border-gray-200 bg-white p-5">
-        <h2 className="text-center text-xl font-bold">
-          CONSERVATORIO NACIONAL DE MÚSICA
-        </h2>
-        
-        <div className="mt-5 grid gap-2 text-sm md:grid-cols-2">
-          <div>
-            <strong>Profesor:</strong>{" "}
-            {nombreDocente || "—"}
-          </div>
-
-          <div>
-            <strong>Asignatura:</strong>{" "}
-            {curso.nombreMateria}
-          </div>
-
-          <div>
-            <strong>Curso:</strong>{" "}
-            Niveles {curso.tipoNivel}
-          </div>
-
-          <div>
-            <strong>Paralelo:</strong>{" "}
-            {curso.asignaciones.length > 1
-              ? "Múltiples"
-              : curso.asignaciones[0]?.paralelo || "—"}
-          </div>
-
-          <div>
-            <strong>Año Lectivo:</strong>{" "}
-            {periodoActivo.descripcion}
-          </div>
-
-          <div>
-            <strong>Jornada:</strong>{" "}
-            {determinarJornada(curso.asignaciones[0]?.horaInicio)}
-          </div>
-        </div>
-      </div>
-
       <GradesWorkspace
         estudiantes={estudiantes}
         esBE={curso.tipoNivel === "BE"}
         fechasNotas={fechasNotas}
+        nombreDocente={nombreDocente}
+        nombreMateria={curso.nombreMateria}
+        tipoNivel={curso.tipoNivel}
+        paralelo={
+          curso.asignaciones.length > 1
+            ? "Múltiples"
+            : curso.asignaciones[0]?.paralelo || "—"
+        }
+        periodo={periodoActivo.descripcion}
+        jornada={determinarJornada(
+          curso.asignaciones[0]?.horaInicio,
+        )}
       />
     </div>
   );
