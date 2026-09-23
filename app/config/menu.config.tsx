@@ -32,6 +32,13 @@ export const SYSTEM_MODULES: SystemModule[] = [
     hideInGrid: true,
   },
   {
+    id: "informacion-representante",
+    label: "Información representante",
+    icon: "👤",
+    path: "/dashboard/representante/perfil",
+    allowedTypes: ["representante"],
+  },
+  {
     id: "configuracion",
     label: "Configuración",
     icon: "⚙️",
