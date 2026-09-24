@@ -121,6 +121,14 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedTypes: ["docente", "representante"],
   },
   {
+    id: "reportes-secretaria",
+    label: "Reportes",
+    icon: "📄",
+    path: "/dashboard/secretaria/reportes",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Secretaria"],
+  },
+  {
     id: "fechas-procesos",
     label: "Fechas Procesos",
     icon: "📅",
