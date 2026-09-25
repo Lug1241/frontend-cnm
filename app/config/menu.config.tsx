@@ -107,6 +107,14 @@ export const SYSTEM_MODULES: SystemModule[] = [
     ],
   },
   {
+    id: "distributivo-individual",
+    label: "Distributivo individual",
+    icon: "📚",
+    path: "/dashboard/distributivo-individual",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Administrador", "Vicerrector", "Profesor"],
+  },
+  {
     id: "calificaciones",
     label: "Calificaciones",
     icon: "📊",
