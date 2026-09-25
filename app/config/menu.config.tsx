@@ -18,6 +18,7 @@ export interface SystemModule {
   path: string;
   allowedTypes: UserType[];
   allowedRoles?: string[];
+  excludedRoles?: UserRole[];
   submodules?: SubModule[];
   hideInGrid?: boolean;
 }
@@ -112,6 +113,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
     icon: "📊",
     path: "/dashboard/calificaciones",
     allowedTypes: ["docente", "representante"],
+    excludedRoles: ["Secretaria"],
   },
   {
     id: "solicitudes",
@@ -119,6 +121,14 @@ export const SYSTEM_MODULES: SystemModule[] = [
     icon: "📨",
     path: "/dashboard/solicitudes",
     allowedTypes: ["docente", "representante"],
+  },
+  {
+    id: "reportes-secretaria",
+    label: "Reportes",
+    icon: "📊",
+    path: "/dashboard/secretaria/reportes",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Secretaria"],
   },
   {
     id: "fechas-procesos",
@@ -161,6 +171,7 @@ export const filterModulesByUser = (
   return modules
     .filter((module) => {
       if (!module.allowedTypes.includes(type)) return false;
+      if (module.excludedRoles?.includes(role)) return false;
       if (module.allowedRoles && module.allowedRoles.length > 0) {
         if (!module.allowedRoles.includes(role)) return false;
       }
