@@ -46,26 +46,36 @@ export default async function ListaCursoPage({
 
   const params = await searchParams;
 
-  const periodoId = Number(params.periodo);
+  const periodoId =
+    Number(params.periodo);
+
   const ids =
     parseIdsAsignaciones(params.ids);
 
   if (
-    !Number.isSafeInteger(periodoId) ||
+    !Number.isSafeInteger(
+      periodoId,
+    ) ||
     periodoId < 1 ||
     ids.length === 0
   ) {
     notFound();
   }
 
-  const idsQuery = ids.join(",");
+  const idsQuery =
+    ids.join(",");
 
-  let periodo: PeriodoAcademico | null =
-    null;
+  let periodo:
+    | PeriodoAcademico
+    | null = null;
 
-  let asignaciones: Asignacion[] = [];
-  let estudiantes: EstudianteListaAdministracion[] =
-    [];
+  let asignaciones:
+    Asignacion[] = [];
+
+  let estudiantes:
+    EstudianteListaAdministracion[] =
+      [];
+
   let errorMsg = "";
 
   try {
@@ -89,16 +99,21 @@ export default async function ListaCursoPage({
       ),
     ]);
 
-    periodo = periodoResponse;
+    periodo =
+      periodoResponse;
 
     asignaciones =
       asignacionesResponse.data.filter(
         (asignacion) =>
-          typeof asignacion.id === "number" &&
-          ids.includes(asignacion.id),
+          typeof asignacion.id ===
+            "number" &&
+          ids.includes(
+            asignacion.id,
+          ),
       );
 
-    estudiantes = estudiantesResponse;
+    estudiantes =
+      estudiantesResponse;
   } catch (error) {
     errorMsg =
       error instanceof Error
@@ -107,133 +122,155 @@ export default async function ListaCursoPage({
   }
 
   const datosCurso =
-    obtenerDatosCurso(asignaciones);
+    obtenerDatosCurso(
+      asignaciones,
+    );
 
   const backHref =
     `/dashboard/secretaria/administracion-escolar?periodo=${periodoId}`;
 
   return (
-    <div className="w-full space-y-5 p-4 sm:p-8">
-      <div className="print:hidden mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
-        <Link
-          href={backHref}
-          className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"
-        >
-          <MdArrowBack />
-          Regresar
-        </Link>
+    <div className="w-full p-4 sm:p-6">
+      <div className="mx-auto w-full max-w-[1320px] space-y-4">
+        <div className="print:hidden flex w-full items-center justify-between gap-3">
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"
+          >
+            <MdArrowBack />
+            Regresar
+          </Link>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-700">
-            Exportaciones:
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700">
+              Exportaciones:
+            </span>
 
-          <BotonImprimir />
+            <BotonImprimir />
+          </div>
         </div>
-      </div>
 
-      {errorMsg ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {errorMsg}
-        </div>
-      ) : (
-        <section className="administracion-print mx-auto w-full max-w-6xl space-y-4 bg-white">
-          <header className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm print:rounded-none print:shadow-none">
-            <div className="grid grid-cols-[90px_1fr] items-center gap-4">
-              <Image
-                src="/ConservatorioNacional.png"
-                alt="Conservatorio Nacional de Música"
-                width={80}
-                height={80}
-                className="h-auto max-h-20 w-auto object-contain"
-                priority
-              />
+        {errorMsg ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {errorMsg}
+          </div>
+        ) : (
+          <section className="administracion-print w-full space-y-4 bg-white">
+            <header className="border border-gray-300 bg-white p-5">
+              <div className="grid grid-cols-[80px_1fr_80px] items-center gap-4">
+                <Image
+                  src="/ConservatorioNacional.png"
+                  alt="Conservatorio Nacional de Música"
+                  width={80}
+                  height={80}
+                  className="h-auto max-h-20 w-auto object-contain"
+                  priority
+                />
 
-              <div className="text-center">
-                <h1 className="text-xl font-bold text-[#00408a] sm:text-2xl">
-                  CONSERVATORIO NACIONAL DE MÚSICA
-                </h1>
+                <div className="text-center">
+                  <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
+                    CONSERVATORIO NACIONAL DE MÚSICA
+                  </h1>
 
-                <p className="mt-1 font-semibold text-gray-700">
-                  LISTADO DE ESTUDIANTES
+                  <p className="mt-1 font-bold text-gray-900">
+                    LISTADO DE ESTUDIANTES
+                  </p>
+                </div>
+
+                <div aria-hidden="true" />
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-x-12 gap-y-2 border-t border-gray-200 pt-4 text-sm text-gray-700 md:grid-cols-2">
+                <p>
+                  <strong>
+                    Profesor:
+                  </strong>{" "}
+                  {datosCurso.docente}
+                </p>
+
+                <p>
+                  <strong>
+                    Asignatura:
+                  </strong>{" "}
+                  {datosCurso.materia}
+                </p>
+
+                <p>
+                  <strong>
+                    Año Lectivo:
+                  </strong>{" "}
+                  {periodo?.descripcion ??
+                    ""}
+                </p>
+
+                <p>
+                  <strong>
+                    Paralelo:
+                  </strong>{" "}
+                  {datosCurso.paralelo}
+                </p>
+
+                <p>
+                  <strong>
+                    Jornada:
+                  </strong>{" "}
+                  {datosCurso.jornada}
                 </p>
               </div>
-            </div>
+            </header>
 
-            <div className="mt-5 grid gap-x-8 gap-y-2 border-t border-gray-200 pt-4 text-sm text-gray-700 sm:grid-cols-2">
-              <p>
-                <strong>Profesor:</strong>{" "}
-                {datosCurso.docente}
-              </p>
+            <div className="overflow-x-auto border border-gray-300">
+              <table className="w-full border-collapse text-base">
+                <thead className="bg-[#c7dcf8] text-black">
+                  <tr>
+                    <th className="w-[70px] border border-gray-300 px-3 py-3 text-center">
+                      Nro
+                    </th>
 
-              <p>
-                <strong>Asignatura:</strong>{" "}
-                {datosCurso.materia}
-              </p>
+                    <th className="border border-gray-300 px-5 py-3 text-left">
+                      Nómina de
+                      Estudiantes
+                    </th>
+                  </tr>
+                </thead>
 
-              <p>
-                <strong>Año Lectivo:</strong>{" "}
-                {periodo?.descripcion ?? ""}
-              </p>
-
-              <p>
-                <strong>Paralelo:</strong>{" "}
-                {datosCurso.paralelo}
-              </p>
-
-              <p>
-                <strong>Jornada:</strong>{" "}
-                {datosCurso.jornada}
-              </p>
-            </div>
-          </header>
-
-          <div className="overflow-x-auto rounded-lg border border-gray-300">
-            <table className="w-full border-collapse text-sm">
-              <thead className="bg-[#c7dcf8] text-black">
-                <tr>
-                  <th className="w-20 border border-gray-300 px-4 py-3 text-center">
-                    Nro
-                  </th>
-
-                  <th className="border border-gray-300 px-4 py-3 text-left">
-                    Nómina de Estudiantes
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {estudiantes.map(
-                  (estudiante) => (
-                    <tr
-                      key={
-                        estudiante.idEstudiante
-                      }
-                      className="even:bg-gray-50"
-                    >
-                      <td className="border border-gray-300 px-4 py-3 text-center">
-                        {estudiante.nro}
-                      </td>
-
-                      <td className="border border-gray-300 px-4 py-3">
-                        {
-                          estudiante.nombreCompleto
+                <tbody>
+                  {estudiantes.map(
+                    (estudiante) => (
+                      <tr
+                        key={
+                          estudiante.idEstudiante
                         }
-                      </td>
-                    </tr>
-                  ),
-                )}
-              </tbody>
-            </table>
-          </div>
+                        className="even:bg-gray-50"
+                      >
+                        <td className="border border-gray-300 px-3 py-2 text-center">
+                          {
+                            estudiante.nro
+                          }
+                        </td>
 
-          {estudiantes.length === 0 && (
-            <p className="py-5 text-center text-sm text-gray-500">
-              No existen estudiantes inscritos en este curso.
-            </p>
-          )}
-        </section>
-      )}
+                        <td className="border border-gray-300 px-5 py-2 text-left">
+                          {
+                            estudiante.nombreCompleto
+                          }
+                        </td>
+                      </tr>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {estudiantes.length ===
+              0 && (
+              <p className="py-5 text-center text-sm text-gray-500">
+                No existen estudiantes
+                inscritos en este curso.
+              </p>
+            )}
+          </section>
+        )}
+      </div>
     </div>
   );
 }

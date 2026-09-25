@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import {
+  FormEvent,
+  useMemo,
+  useState,
+} from "react";
 import {
   MdFactCheck,
   MdFilterAlt,
@@ -22,6 +26,16 @@ interface Props {
   periodoId: number;
   periodoDescripcion: string;
 }
+
+const ORDEN_DIAS = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
 
 function normalizar(texto: string) {
   return texto
@@ -45,35 +59,122 @@ function BroomIcon() {
   );
 }
 
+function obtenerHorarios(
+  asignaciones: Asignacion[],
+) {
+  return [
+    ...new Set(
+      asignaciones
+        .map((asignacion) => {
+          if (
+            !asignacion.horaInicio &&
+            !asignacion.horaFin
+          ) {
+            return "";
+          }
+
+          return [
+            asignacion.horaInicio,
+            asignacion.horaFin,
+          ]
+            .filter(Boolean)
+            .join(" - ");
+        })
+        .filter(Boolean),
+    ),
+  ];
+}
+
+function obtenerDias(
+  asignaciones: Asignacion[],
+) {
+  const dias = [
+    ...new Set(
+      asignaciones.flatMap(
+        (asignacion) =>
+          asignacion.dias ?? [],
+      ),
+    ),
+  ];
+
+  return dias.sort((a, b) => {
+    const posicionA =
+      ORDEN_DIAS.indexOf(a);
+
+    const posicionB =
+      ORDEN_DIAS.indexOf(b);
+
+    if (
+      posicionA === -1 &&
+      posicionB === -1
+    ) {
+      return a.localeCompare(b, "es");
+    }
+
+    if (posicionA === -1) return 1;
+    if (posicionB === -1) return -1;
+
+    return posicionA - posicionB;
+  });
+}
+
+function obtenerParalelos(
+  asignaciones: Asignacion[],
+) {
+  return [
+    ...new Set(
+      asignaciones
+        .map(
+          (asignacion) =>
+            asignacion.paralelo,
+        )
+        .filter(Boolean),
+    ),
+  ];
+}
+
 export default function AdministracionEscolarClient({
   asignaciones,
   periodoId,
   periodoDescripcion,
 }: Props) {
   const cursos = useMemo(
-    () => agruparAdministracionEscolar(asignaciones),
+    () =>
+      agruparAdministracionEscolar(
+        asignaciones,
+      ),
     [asignaciones],
   );
 
   const niveles = useMemo(
     () =>
       ordenarNiveles([
-        ...new Set(cursos.map((curso) => curso.nivel)),
+        ...new Set(
+          cursos.map(
+            (curso) => curso.nivel,
+          ),
+        ),
       ]),
     [cursos],
   );
 
-  const [nivelActivo, setNivelActivo] = useState(
-    niveles[0] ?? "",
-  );
+  const [nivelActivo, setNivelActivo] =
+    useState(niveles[0] ?? "");
 
-  const [busqueda, setBusqueda] = useState("");
-  const [busquedaAplicada, setBusquedaAplicada] =
+  const [busqueda, setBusqueda] =
     useState("");
+
+  const [
+    busquedaAplicada,
+    setBusquedaAplicada,
+  ] = useState("");
 
   function buscar(event: FormEvent) {
     event.preventDefault();
-    setBusquedaAplicada(busqueda.trim());
+
+    setBusquedaAplicada(
+      busqueda.trim(),
+    );
   }
 
   function limpiar() {
@@ -81,25 +182,31 @@ export default function AdministracionEscolarClient({
     setBusquedaAplicada("");
   }
 
-  const resultadosBusqueda = useMemo(() => {
-    if (!busquedaAplicada) {
-      return [];
-    }
+  const resultadosBusqueda =
+    useMemo(() => {
+      if (!busquedaAplicada) {
+        return [];
+      }
 
-    const termino = normalizar(busquedaAplicada);
+      const termino =
+        normalizar(busquedaAplicada);
 
-    return cursos.filter((curso) =>
-      normalizar(curso.docenteNombre).includes(termino),
-    );
-  }, [cursos, busquedaAplicada]);
+      return cursos.filter((curso) =>
+        normalizar(
+          curso.docenteNombre,
+        ).includes(termino),
+      );
+    }, [cursos, busquedaAplicada]);
 
   const cursosNivel = cursos.filter(
-    (curso) => curso.nivel === nivelActivo,
+    (curso) =>
+      curso.nivel === nivelActivo,
   );
 
-  const cursosVisibles = busquedaAplicada
-    ? resultadosBusqueda
-    : cursosNivel;
+  const cursosVisibles =
+    busquedaAplicada
+      ? resultadosBusqueda
+      : cursosNivel;
 
   return (
     <div className="space-y-6">
@@ -115,8 +222,8 @@ export default function AdministracionEscolarClient({
         </div>
 
         <form
-        onSubmit={buscar}
-        className="flex w-full flex-col gap-2 sm:flex-row sm:items-center xl:max-w-xl"
+          onSubmit={buscar}
+          className="flex w-full flex-col gap-2 sm:flex-row sm:items-center xl:max-w-xl"
         >
           <span className="shrink-0 text-sm font-semibold text-gray-700">
             Buscar:
@@ -126,7 +233,9 @@ export default function AdministracionEscolarClient({
             <input
               value={busqueda}
               onChange={(event) =>
-                setBusqueda(event.target.value)
+                setBusqueda(
+                  event.target.value,
+                )
               }
               placeholder="Ingrese el nombre del docente..."
               className="min-w-0 flex-1 rounded-l-md border border-gray-300 px-3 py-2 text-sm focus:border-[#00408a] focus:outline-none"
@@ -159,14 +268,17 @@ export default function AdministracionEscolarClient({
               <button
                 key={nivel}
                 type="button"
-                onClick={() => setNivelActivo(nivel)}
+                onClick={() =>
+                  setNivelActivo(nivel)
+                }
                 className={`border-b-2 px-5 py-3 text-sm font-semibold transition ${
                   nivelActivo === nivel
                     ? "border-[#00408a] text-[#00408a]"
                     : "border-transparent text-gray-500 hover:text-[#00408a]"
                 }`}
               >
-                {NOMBRES_NIVELES[nivel] ?? nivel}
+                {NOMBRES_NIVELES[nivel] ??
+                  nivel}
               </button>
             ))}
           </div>
@@ -174,12 +286,20 @@ export default function AdministracionEscolarClient({
       )}
 
       <div className="flex items-center gap-2 text-sm text-gray-500">
-        <MdFilterAlt className="h-5 w-5" aria-hidden />
+        <MdFilterAlt
+          className="h-5 w-5"
+          aria-hidden
+        />
 
         {busquedaAplicada ? (
           <span>
-            Mostrando {cursosVisibles.length} resultado
-            {cursosVisibles.length === 1 ? "" : "s"} para el docente{" "}
+            Mostrando{" "}
+            {cursosVisibles.length}{" "}
+            resultado
+            {cursosVisibles.length === 1
+              ? ""
+              : "s"}{" "}
+            para el docente{" "}
             <strong className="text-gray-700">
               {busquedaAplicada}
             </strong>
@@ -187,8 +307,12 @@ export default function AdministracionEscolarClient({
           </span>
         ) : (
           <span>
-            Mostrando {cursosVisibles.length} resultado
-            {cursosVisibles.length === 1 ? "" : "s"}
+            Mostrando{" "}
+            {cursosVisibles.length}{" "}
+            resultado
+            {cursosVisibles.length === 1
+              ? ""
+              : "s"}
           </span>
         )}
       </div>
@@ -201,121 +325,117 @@ export default function AdministracionEscolarClient({
         </div>
       ) : (
         <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5">
-          {cursosVisibles.map((curso) => {
-            const ids = curso.asignaciones
-              .map((asignacion) => asignacion.id)
-              .filter(
-                (id): id is number =>
-                  typeof id === "number",
-              );
+          {cursosVisibles.map(
+            (curso) => {
+              const ids =
+                curso.asignaciones
+                  .map(
+                    (asignacion) =>
+                      asignacion.id,
+                  )
+                  .filter(
+                    (
+                      id,
+                    ): id is number =>
+                      typeof id ===
+                      "number",
+                  );
 
-            const query = new URLSearchParams({
-              periodo: String(periodoId),
-              ids: ids.join(","),
-            });
+              const query =
+                new URLSearchParams({
+                  periodo:
+                    String(periodoId),
+                  ids: ids.join(","),
+                });
 
-            const primeraAsignacion =
-              curso.asignaciones[0];
+              const horarios =
+                obtenerHorarios(
+                  curso.asignaciones,
+                );
 
-            const agrupado =
-              curso.asignaciones.length > 1;
+              const dias =
+                obtenerDias(
+                  curso.asignaciones,
+                );
 
-            return (
-              <article
-                key={curso.id}
-                className="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-lg font-bold text-[#00408a]">
-                        {curso.nombreMateria}
-                      </h2>
+              const paralelos =
+                obtenerParalelos(
+                  curso.asignaciones,
+                );
 
-                      <p className="mt-1 text-sm text-gray-500">
-                        {curso.tipo}
-                        {!agrupado &&
-                        primeraAsignacion?.paralelo
-                          ? ` | Paralelo: ${primeraAsignacion.paralelo}`
+              return (
+                <article
+                  key={curso.id}
+                  className="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                >
+                  <div>
+                    <h2 className="text-lg font-bold text-[#00408a]">
+                      {
+                        curso.nombreMateria
+                      }
+                    </h2>
+
+                    <p className="mt-1 text-sm text-gray-500">
+                      {curso.tipo}
+
+                      {paralelos.length ===
+                      1
+                        ? ` | Paralelo: ${paralelos[0]}`
+                        : paralelos.length >
+                            1
+                          ? ` | Paralelos: ${paralelos.join(", ")}`
                           : ""}
+                    </p>
+
+                    <div className="mt-4 space-y-2 text-sm text-gray-700">
+                      <p>
+                        <strong>
+                          Horario:
+                        </strong>{" "}
+                        {horarios.join(
+                          " / ",
+                        )}
+                      </p>
+
+                      <p>
+                        <strong>
+                          Días:
+                        </strong>{" "}
+                        {dias.join(", ")}
+                      </p>
+
+                      <p>
+                        <strong>
+                          Docente:
+                        </strong>{" "}
+                        {
+                          curso.docenteNombre
+                        }
                       </p>
                     </div>
-
-                    {agrupado && (
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#00408a]">
-                        {curso.asignaciones.length} asignaciones
-                      </span>
-                    )}
                   </div>
 
-                  <div className="mt-4 space-y-2 text-sm text-gray-700">
-                    <p>
-                      <strong>Nivel:</strong>{" "}
-                      {NOMBRES_NIVELES[curso.nivel] ??
-                        curso.nivel}
-                    </p>
+                  <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-gray-100 pt-4">
+                    <Link
+                      href={`/dashboard/secretaria/administracion-escolar/lista?${query.toString()}`}
+                      className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"
+                    >
+                      <MdPeople />
+                      Ver Lista
+                    </Link>
 
-                    <p>
-                      <strong>Docente:</strong>{" "}
-                      {curso.docenteNombre}
-                    </p>
-
-                    {!agrupado && (
-                      <>
-                        <p>
-                          <strong>Horario:</strong>{" "}
-                          {primeraAsignacion?.horaInicio || ""}
-                          {primeraAsignacion?.horaInicio &&
-                          primeraAsignacion?.horaFin
-                            ? " - "
-                            : ""}
-                          {primeraAsignacion?.horaFin || ""}
-                        </p>
-
-                        <p>
-                          <strong>Días:</strong>{" "}
-                          {primeraAsignacion?.dias?.join(", ") ||
-                            ""}
-                        </p>
-                      </>
-                    )}
-
-                    {agrupado && (
-                      <p>
-                        <strong>Horarios:</strong>{" "}
-                        agrupados en una sola tarjeta
-                      </p>
-                    )}
-
-                    {busquedaAplicada && (
-                      <p>
-                        <strong>Grupo:</strong>{" "}
-                        {curso.nivel}
-                      </p>
-                    )}
+                    <Link
+                      href={`/dashboard/secretaria/administracion-escolar/calificaciones?${query.toString()}`}
+                      className="inline-flex items-center gap-2 rounded-md bg-[#00408a] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#00336e]"
+                    >
+                      <MdFactCheck />
+                      Ver Calificaciones
+                    </Link>
                   </div>
-                </div>
-
-                <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-gray-100 pt-4">
-                  <Link
-                    href={`/dashboard/secretaria/administracion-escolar/lista?${query.toString()}`}
-                    className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"
-                  >
-                    <MdPeople />
-                    Ver Lista
-                  </Link>
-
-                  <Link
-                    href={`/dashboard/secretaria/administracion-escolar/calificaciones?${query.toString()}`}
-                    className="inline-flex items-center gap-2 rounded-md bg-[#00408a] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#00336e]"
-                  >
-                    <MdFactCheck />
-                    Ver Calificaciones
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            },
+          )}
         </div>
       )}
     </div>

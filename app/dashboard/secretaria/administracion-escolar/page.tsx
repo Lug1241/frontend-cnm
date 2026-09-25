@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { MdArrowBack, MdEventNote } from "react-icons/md";
+import { MdArrowBack, MdMenuBook } from "react-icons/md";
 
 import { fetchAPI } from "@/lib/api";
 import type { Asignacion } from "@/types/Asignacion";
@@ -83,71 +83,72 @@ export default async function AdministracionEscolarPage({
   }
 
   if (periodoId && !periodoSeleccionado && !errorMsg) {
-    errorMsg = "El período académico seleccionado no existe.";
+    errorMsg =
+      "El período académico seleccionado no existe.";
   }
 
   return (
-    <div className="w-full space-y-6 p-4 sm:p-8">
-      {errorMsg && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {errorMsg}
-        </div>
-      )}
+    <div className="w-full p-4 sm:p-8">
+      <div className="mx-auto w-full max-w-7xl space-y-6">
+        {errorMsg && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {errorMsg}
+          </div>
+        )}
 
-      {!periodoSeleccionado ? (
-        <>
-          <div className="mx-auto w-full max-w-7xl">
-            <h1 className="text-2xl font-bold text-[#00408a] sm:text-3xl">
+        {!periodoSeleccionado ? (
+          <>
+            <h1 className="text-2xl font-bold text-[#1265f3] sm:text-3xl">
               Gestión Escolar - Periodos Académicos
             </h1>
-          </div>
 
-          <div className="mx-auto grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2">
-            {[...periodos]
-              .sort((a, b) =>
-                a.descripcion.localeCompare(
-                  b.descripcion,
-                  "es",
-                ),
-              )
-              .map((periodo) => (
-                <Link
-                  key={periodo.id}
-                  href={`/dashboard/secretaria/administracion-escolar?periodo=${periodo.id}`}
-                  className="group flex min-h-48 flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm transition hover:-translate-y-1 hover:border-[#00408a] hover:shadow-md"
-                >
-                  <MdEventNote className="mb-4 h-12 w-12 text-[#00408a]" />
+            <div className="mx-auto grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2">
+              {[...periodos]
+                .sort((a, b) =>
+                  a.descripcion.localeCompare(
+                    b.descripcion,
+                    "es",
+                  ),
+                )
+                .map((periodo) => (
+                  <Link
+                    key={periodo.id}
+                    href={`/dashboard/secretaria/administracion-escolar?periodo=${periodo.id}`}
+                    className="mx-auto flex min-h-[230px] w-full max-w-[330px] flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm transition hover:-translate-y-1 hover:border-[#00408a] hover:shadow-md"
+                  >
+                    <MdMenuBook className="mb-5 h-12 w-12 text-gray-800" />
 
-                  <h2 className="font-bold text-[#00408a]">
-                    Periodo: {periodo.descripcion}
-                  </h2>
+                    <h2 className="text-base font-bold text-gray-900">
+                      Periodo: {periodo.descripcion}
+                    </h2>
 
-                  <p className="mt-2 text-sm text-gray-500">
-                    Estado: {periodo.estado}
-                  </p>
-                </Link>
-              ))}
-          </div>
-        </>
-      ) : (
-        <>
-          <Link
-            href="/dashboard/secretaria/administracion-escolar"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#00408a] hover:underline"
-          >
-            <MdArrowBack />
-            Regresar a períodos
-          </Link>
+                    <p className="mt-2 text-sm text-gray-600">
+                      Estado: {periodo.estado}
+                    </p>
+                  </Link>
+                ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <Link
+              href="/dashboard/secretaria/administracion-escolar"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#00408a] hover:underline"
+            >
+              <MdArrowBack />
+              Regresar a períodos
+            </Link>
 
-          <AdministracionEscolarClient
-            asignaciones={asignaciones}
-            periodoId={periodoSeleccionado.id}
-            periodoDescripcion={
-              periodoSeleccionado.descripcion
-            }
-          />
-        </>
-      )}
+            <AdministracionEscolarClient
+              asignaciones={asignaciones}
+              periodoId={periodoSeleccionado.id}
+              periodoDescripcion={
+                periodoSeleccionado.descripcion
+              }
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }

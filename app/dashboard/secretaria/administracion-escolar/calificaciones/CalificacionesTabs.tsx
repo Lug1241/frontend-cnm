@@ -188,12 +188,17 @@ function BandaFecha({
     <div className="border border-amber-300 bg-amber-100 px-4 py-4 text-center text-sm text-amber-800">
       {fecha ? (
         <>
-          ◷ Disponible del{" "}
-          {formatoFecha(fecha.fechaInicio)} al{" "}
-          {formatoFecha(fecha.fechaFin)}
+          🕐 Disponible del{" "}
+          {formatoFecha(
+            fecha.fechaInicio,
+          )}{" "}
+          al{" "}
+          {formatoFecha(
+            fecha.fechaFin,
+          )}
         </>
       ) : (
-        <>◷ Fecha por definirse</>
+        <>🕐 Fecha por definirse</>
       )}
     </div>
   );
