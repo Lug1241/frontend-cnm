@@ -3,7 +3,9 @@
 import Link from "next/link";
 import {
   FormEvent,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -25,6 +27,8 @@ interface Props {
   asignaciones: Asignacion[];
   periodoId: number;
   periodoDescripcion: string;
+  nivelInicial?: string;
+  cursoInicial?: string;
 }
 
 const ORDEN_DIAS = [
@@ -59,45 +63,8 @@ function BroomIcon() {
   );
 }
 
-function obtenerHorarios(
-  asignaciones: Asignacion[],
-) {
-  return [
-    ...new Set(
-      asignaciones
-        .map((asignacion) => {
-          if (
-            !asignacion.horaInicio &&
-            !asignacion.horaFin
-          ) {
-            return "";
-          }
-
-          return [
-            asignacion.horaInicio,
-            asignacion.horaFin,
-          ]
-            .filter(Boolean)
-            .join(" - ");
-        })
-        .filter(Boolean),
-    ),
-  ];
-}
-
-function obtenerDias(
-  asignaciones: Asignacion[],
-) {
-  const dias = [
-    ...new Set(
-      asignaciones.flatMap(
-        (asignacion) =>
-          asignacion.dias ?? [],
-      ),
-    ),
-  ];
-
-  return dias.sort((a, b) => {
+function ordenarDias(dias: string[]) {
+  return [...dias].sort((a, b) => {
     const posicionA =
       ORDEN_DIAS.indexOf(a);
 
@@ -116,6 +83,45 @@ function obtenerDias(
 
     return posicionA - posicionB;
   });
+}
+
+function obtenerSesiones(
+  asignaciones: Asignacion[],
+) {
+  const diasPorHorario = new Map<
+    string,
+    Set<string>
+  >();
+
+  asignaciones.forEach((asignacion) => {
+    const horario = [
+      asignacion.horaInicio,
+      asignacion.horaFin,
+    ]
+      .filter(Boolean)
+      .join(" - ");
+
+    if (!horario) return;
+
+    const dias =
+      diasPorHorario.get(horario) ??
+      new Set<string>();
+
+    (asignacion.dias ?? []).forEach(
+      (dia) => dias.add(dia),
+    );
+
+    diasPorHorario.set(horario, dias);
+  });
+
+  return [...diasPorHorario.entries()]
+    .map(([horario, dias]) => ({
+      horario,
+      dias: ordenarDias([...dias]),
+    }))
+    .sort((a, b) =>
+      a.horario.localeCompare(b.horario),
+    );
 }
 
 function obtenerParalelos(
@@ -137,6 +143,8 @@ export default function AdministracionEscolarClient({
   asignaciones,
   periodoId,
   periodoDescripcion,
+  nivelInicial,
+  cursoInicial,
 }: Props) {
   const cursos = useMemo(
     () =>
@@ -158,8 +166,68 @@ export default function AdministracionEscolarClient({
     [cursos],
   );
 
+  const cursoRestaurado = cursos.find(
+    (curso) => curso.id === cursoInicial,
+  );
+
   const [nivelActivo, setNivelActivo] =
-    useState(niveles[0] ?? "");
+    useState(
+      cursoRestaurado?.nivel ??
+        (nivelInicial &&
+        niveles.includes(nivelInicial)
+          ? nivelInicial
+          : niveles[0] ?? ""),
+    );
+
+  const [cursoResaltado, setCursoResaltado] =
+    useState(cursoRestaurado?.id ?? null);
+
+  const pestañasRef = useRef(
+    new Map<string, HTMLButtonElement>(),
+  );
+
+  useEffect(() => {
+    if (!cursoRestaurado) {
+      return;
+    }
+
+    const comportamiento = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+      ? "auto"
+      : "smooth";
+
+    const animacion = window.requestAnimationFrame(
+      () => {
+        pestañasRef.current
+          .get(cursoRestaurado.nivel)
+          ?.scrollIntoView({
+            behavior: comportamiento,
+            block: "nearest",
+            inline: "center",
+          });
+
+        document
+          .getElementById(
+            `curso-${cursoRestaurado.id}`,
+          )
+          ?.scrollIntoView({
+            behavior: comportamiento,
+            block: "center",
+          });
+      },
+    );
+
+    const temporizador = window.setTimeout(
+      () => setCursoResaltado(null),
+      1500,
+    );
+
+    return () => {
+      window.cancelAnimationFrame(animacion);
+      window.clearTimeout(temporizador);
+    };
+  }, [cursoRestaurado]);
 
   const [busqueda, setBusqueda] =
     useState("");
@@ -267,6 +335,18 @@ export default function AdministracionEscolarClient({
             {niveles.map((nivel) => (
               <button
                 key={nivel}
+                ref={(elemento) => {
+                  if (elemento) {
+                    pestañasRef.current.set(
+                      nivel,
+                      elemento,
+                    );
+                  } else {
+                    pestañasRef.current.delete(
+                      nivel,
+                    );
+                  }
+                }}
                 type="button"
                 onClick={() =>
                   setNivelActivo(nivel)
@@ -346,15 +426,12 @@ export default function AdministracionEscolarClient({
                   periodo:
                     String(periodoId),
                   ids: ids.join(","),
+                  nivel: curso.nivel,
+                  curso: curso.id,
                 });
 
-              const horarios =
-                obtenerHorarios(
-                  curso.asignaciones,
-                );
-
-              const dias =
-                obtenerDias(
+              const sesiones =
+                obtenerSesiones(
                   curso.asignaciones,
                 );
 
@@ -366,7 +443,12 @@ export default function AdministracionEscolarClient({
               return (
                 <article
                   key={curso.id}
-                  className="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                  id={`curso-${curso.id}`}
+                  className={`scroll-mt-6 flex flex-col justify-between rounded-xl border bg-white p-5 transition-[border-color,box-shadow,background-color] duration-700 ${
+                    cursoResaltado === curso.id
+                      ? "border-[#00408a] bg-blue-50/60 shadow-md ring-2 ring-[#00408a]"
+                      : "border-gray-200 shadow-sm"
+                  }`}
                 >
                   <div>
                     <h2 className="text-lg font-bold text-[#00408a]">
@@ -388,21 +470,46 @@ export default function AdministracionEscolarClient({
                     </p>
 
                     <div className="mt-4 space-y-2 text-sm text-gray-700">
-                      <p>
-                        <strong>
-                          Horario:
-                        </strong>{" "}
-                        {horarios.join(
-                          " / ",
-                        )}
-                      </p>
+                      {sesiones.map(
+                        (sesion) => (
+                          <div
+                            key={
+                              sesion.horario
+                            }
+                            className="grid grid-cols-[auto_1fr] gap-x-1"
+                          >
+                            <strong>
+                              Horario:
+                            </strong>
 
-                      <p>
-                        <strong>
-                          Días:
-                        </strong>{" "}
-                        {dias.join(", ")}
-                      </p>
+                            <span>
+                              {
+                                sesion.horario
+                              }
+                            </span>
+
+                            <strong>
+                              Días:
+                            </strong>
+
+                            <span>
+                              {sesion.dias.join(
+                                ", ",
+                              ) || "-"}
+                            </span>
+                          </div>
+                        ),
+                      )}
+
+                      {sesiones.length ===
+                        0 && (
+                        <p>
+                          <strong>
+                            Horario:
+                          </strong>{" "}
+                          -
+                        </p>
+                      )}
 
                       <p>
                         <strong>
@@ -415,7 +522,7 @@ export default function AdministracionEscolarClient({
                     </div>
                   </div>
 
-                  <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-gray-100 pt-4">
+                  <div className="mt-5 flex flex-wrap items-center justify-start gap-2 border-t border-gray-100 pt-4">
                     <Link
                       href={`/dashboard/secretaria/administracion-escolar/lista?${query.toString()}`}
                       className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"

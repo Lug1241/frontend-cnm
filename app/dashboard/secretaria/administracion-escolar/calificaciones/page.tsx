@@ -37,6 +37,8 @@ export default async function CalificacionesCursoPage({
   searchParams: Promise<{
     periodo?: string;
     ids?: string;
+    nivel?: string;
+    curso?: string;
   }>;
 }) {
   const cookieStore = await cookies();
@@ -119,8 +121,19 @@ export default async function CalificacionesCursoPage({
 
   const datosCurso = obtenerDatosCurso(asignaciones);
 
-  const backHref =
-    `/dashboard/secretaria/administracion-escolar?periodo=${periodoId}`;
+  const backQuery = new URLSearchParams({
+    periodo: String(periodoId),
+  });
+
+  if (params.nivel) {
+    backQuery.set("nivel", params.nivel);
+  }
+
+  if (params.curso) {
+    backQuery.set("curso", params.curso);
+  }
+
+  const backHref = `/dashboard/secretaria/administracion-escolar?${backQuery.toString()}`;
 
   return (
     <div className="w-full p-4 sm:p-6">

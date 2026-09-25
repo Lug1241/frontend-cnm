@@ -31,6 +31,8 @@ export default async function AdministracionEscolarPage({
 }: {
   searchParams: Promise<{
     periodo?: string;
+    nivel?: string;
+    curso?: string;
   }>;
 }) {
   const cookieStore = await cookies();
@@ -145,6 +147,8 @@ export default async function AdministracionEscolarPage({
               periodoDescripcion={
                 periodoSeleccionado.descripcion
               }
+              nivelInicial={params.nivel}
+              cursoInicial={params.curso}
             />
           </>
         )}
