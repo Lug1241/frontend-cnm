@@ -147,8 +147,11 @@ export default async function AdministracionEscolarPage({
               periodoDescripcion={
                 periodoSeleccionado.descripcion
               }
+<<<<<<< HEAD
               nivelInicial={params.nivel}
               cursoInicial={params.curso}
+=======
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
             />
           </>
         )}

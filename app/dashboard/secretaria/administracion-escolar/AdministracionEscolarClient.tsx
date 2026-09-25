@@ -3,9 +3,13 @@
 import Link from "next/link";
 import {
   FormEvent,
+<<<<<<< HEAD
   useEffect,
   useMemo,
   useRef,
+=======
+  useMemo,
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
   useState,
 } from "react";
 import {
@@ -63,8 +67,50 @@ function BroomIcon() {
   );
 }
 
+<<<<<<< HEAD
 function ordenarDias(dias: string[]) {
   return [...dias].sort((a, b) => {
+=======
+function obtenerHorarios(
+  asignaciones: Asignacion[],
+) {
+  return [
+    ...new Set(
+      asignaciones
+        .map((asignacion) => {
+          if (
+            !asignacion.horaInicio &&
+            !asignacion.horaFin
+          ) {
+            return "";
+          }
+
+          return [
+            asignacion.horaInicio,
+            asignacion.horaFin,
+          ]
+            .filter(Boolean)
+            .join(" - ");
+        })
+        .filter(Boolean),
+    ),
+  ];
+}
+
+function obtenerDias(
+  asignaciones: Asignacion[],
+) {
+  const dias = [
+    ...new Set(
+      asignaciones.flatMap(
+        (asignacion) =>
+          asignacion.dias ?? [],
+      ),
+    ),
+  ];
+
+  return dias.sort((a, b) => {
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
     const posicionA =
       ORDEN_DIAS.indexOf(a);
 
@@ -85,6 +131,7 @@ function ordenarDias(dias: string[]) {
   });
 }
 
+<<<<<<< HEAD
 function obtenerSesiones(
   asignaciones: Asignacion[],
 ) {
@@ -124,6 +171,8 @@ function obtenerSesiones(
     );
 }
 
+=======
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
 function obtenerParalelos(
   asignaciones: Asignacion[],
 ) {
@@ -166,6 +215,7 @@ export default function AdministracionEscolarClient({
     [cursos],
   );
 
+<<<<<<< HEAD
   const cursoRestaurado = cursos.find(
     (curso) => curso.id === cursoInicial,
   );
@@ -229,6 +279,11 @@ export default function AdministracionEscolarClient({
     };
   }, [cursoRestaurado]);
 
+=======
+  const [nivelActivo, setNivelActivo] =
+    useState(niveles[0] ?? "");
+
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
   const [busqueda, setBusqueda] =
     useState("");
 
@@ -426,6 +481,7 @@ export default function AdministracionEscolarClient({
                   periodo:
                     String(periodoId),
                   ids: ids.join(","),
+<<<<<<< HEAD
                   nivel: curso.nivel,
                   curso: curso.id,
                 });
@@ -457,6 +513,37 @@ export default function AdministracionEscolarClient({
                       }
                     </h2>
 
+=======
+                });
+
+              const horarios =
+                obtenerHorarios(
+                  curso.asignaciones,
+                );
+
+              const dias =
+                obtenerDias(
+                  curso.asignaciones,
+                );
+
+              const paralelos =
+                obtenerParalelos(
+                  curso.asignaciones,
+                );
+
+              return (
+                <article
+                  key={curso.id}
+                  className="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                >
+                  <div>
+                    <h2 className="text-lg font-bold text-[#00408a]">
+                      {
+                        curso.nombreMateria
+                      }
+                    </h2>
+
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
                     <p className="mt-1 text-sm text-gray-500">
                       {curso.tipo}
 
@@ -470,6 +557,7 @@ export default function AdministracionEscolarClient({
                     </p>
 
                     <div className="mt-4 space-y-2 text-sm text-gray-700">
+<<<<<<< HEAD
                       {sesiones.map(
                         (sesion) => (
                           <div
@@ -510,6 +598,23 @@ export default function AdministracionEscolarClient({
                           -
                         </p>
                       )}
+=======
+                      <p>
+                        <strong>
+                          Horario:
+                        </strong>{" "}
+                        {horarios.join(
+                          " / ",
+                        )}
+                      </p>
+
+                      <p>
+                        <strong>
+                          Días:
+                        </strong>{" "}
+                        {dias.join(", ")}
+                      </p>
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
 
                       <p>
                         <strong>
@@ -522,7 +627,11 @@ export default function AdministracionEscolarClient({
                     </div>
                   </div>
 
+<<<<<<< HEAD
                   <div className="mt-5 flex flex-wrap items-center justify-start gap-2 border-t border-gray-100 pt-4">
+=======
+                  <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-gray-100 pt-4">
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
                     <Link
                       href={`/dashboard/secretaria/administracion-escolar/lista?${query.toString()}`}
                       className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"

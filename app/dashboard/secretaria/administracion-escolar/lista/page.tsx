@@ -232,6 +232,7 @@ export default async function ListaCursoPage({
               </div>
             </header>
 
+<<<<<<< HEAD
             <div className="mt-3 max-h-[600px] overflow-auto border border-gray-300">
               <table className="w-full border-collapse text-[1.1rem]">
                 <thead className="bg-[#c7dcf8] text-black">
@@ -241,6 +242,17 @@ export default async function ListaCursoPage({
                     </th>
 
                     <th className="h-[50px] min-w-[280px] border border-gray-300 px-3 py-2 text-left align-middle">
+=======
+            <div className="overflow-x-auto border border-gray-300">
+              <table className="w-full border-collapse text-base">
+                <thead className="bg-[#c7dcf8] text-black">
+                  <tr>
+                    <th className="w-[70px] border border-gray-300 px-3 py-3 text-center">
+                      Nro
+                    </th>
+
+                    <th className="border border-gray-300 px-5 py-3 text-left">
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
                       Nómina de
                       Estudiantes
                     </th>
@@ -256,13 +268,21 @@ export default async function ListaCursoPage({
                         }
                         className="even:bg-gray-50"
                       >
+<<<<<<< HEAD
                         <td className="h-10 w-[60px] whitespace-nowrap border border-gray-300 px-2 py-1.5 text-center">
+=======
+                        <td className="border border-gray-300 px-3 py-2 text-center">
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
                           {
                             estudiante.nro
                           }
                         </td>
 
+<<<<<<< HEAD
                         <td className="h-10 min-w-[280px] whitespace-nowrap border border-gray-300 px-3 py-1.5 text-left">
+=======
+                        <td className="border border-gray-300 px-5 py-2 text-left">
+>>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
                           {
                             estudiante.nombreCompleto
                           }
