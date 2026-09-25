@@ -1,74 +1,185 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import {
+  MdArrowBack,
+  MdEdit,
+  MdSave,
+} from "react-icons/md";
+
+import { fetchAPI } from "@/lib/api";
+import type { Asignacion } from "@/types/Asignacion";
 import type {
-  ResultadoFinalReporte,
-  ResultadoQuimestreReporte,
-} from "@/types/ReporteCalificaciones";
+  ReporteAsignacionesAdministracion,
+} from "@/types/AdministracionEscolar";
+import type {
+  FechaProceso,
+  FechasProcesosResponse,
+} from "@/types/FechaProceso";
+import type { PeriodoAcademico } from "@/types/PeriodoAcademico";
 
-export interface EstudianteListaAdministracion {
-  nro: number;
-  idEstudiante: number;
-  nombreCompleto: string;
-  nivel: string;
-  idAsignaciones: number[];
-  idInscripciones: number[];
+import BotonImprimir from "../BotonImprimir";
+import {
+  obtenerDatosCurso,
+  parseIdsAsignaciones,
+} from "../_lib/detalleCurso";
+
+import CalificacionesTabs from "./CalificacionesTabs";
+
+interface AsignacionesResponse {
+  data: Asignacion[];
+  totalRows: number;
 }
 
-export interface DetalleParcialAdministracion {
-  insumo1: number;
-  insumo2: number;
-  evaluacion: number;
-  ponderacion70: number;
-  ponderacion30: number;
+export default async function CalificacionesCursoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    periodo?: string;
+    ids?: string;
+  }>;
+}) {
+  const cookieStore = await cookies();
 
-  // Superior
-  promedioParcial?: number;
-  criteriosComportamiento?: number[];
-  promedioComportamiento?: number;
-  valoracionComportamiento?: string;
+  if (cookieStore.get("rol")?.value !== "Secretaria") {
+    redirect("/dashboard");
+  }
 
-  // Básico Elemental
-  mejoramiento?: number | null;
-  promedioInsumos?: number;
-  promedioMejora?: number | null;
-  promedioSumativas?: number;
-  notaParcial?: number;
-}
+  const params = await searchParams;
 
-export interface DetalleParcialesAdministracion {
-  q1: {
-    p1: DetalleParcialAdministracion | null;
-    p2: DetalleParcialAdministracion | null;
+  const periodoId = Number(params.periodo);
+  const ids = parseIdsAsignaciones(params.ids);
+
+  if (
+    !Number.isSafeInteger(periodoId) ||
+    periodoId < 1 ||
+    ids.length === 0
+  ) {
+    notFound();
+  }
+
+  const idsQuery = ids.join(",");
+
+  let periodo: PeriodoAcademico | null = null;
+  let asignaciones: Asignacion[] = [];
+
+  let reporte: ReporteAsignacionesAdministracion = {
+    asignacionIds: ids,
+    estudiantes: [],
   };
-  q2: {
-    p1: DetalleParcialAdministracion | null;
-    p2: DetalleParcialAdministracion | null;
-  };
-}
 
-export interface FilaCalificacionAdministracion {
-  idInscripcion: number;
-  idAsignacion: number | null;
-  idMatricula: number | null;
-  idEstudiante: number | null;
-  nombreCompleto: string;
-  nivel: string | null;
+  let fechas: FechaProceso[] = [];
+  let errorMsg = "";
 
-  asignatura: string;
-  tipoMateria: string | null;
-  tipoCalificacion: "BE" | "Superior";
+  try {
+    const [
+      periodoResponse,
+      asignacionesResponse,
+      reporteResponse,
+    ] = await Promise.all([
+      fetchAPI<PeriodoAcademico>(
+        `/periodo_academico/obtener/${periodoId}`,
+      ),
 
-  docente: {
-    id: number | null;
-    nombreCompleto: string;
-  } | null;
+      fetchAPI<AsignacionesResponse>(
+        `/asignaciones/administracion-escolar/periodo/${periodoId}`,
+      ),
 
-  detalleParciales: DetalleParcialesAdministracion;
+      fetchAPI<ReporteAsignacionesAdministracion>(
+        `/calificaciones/reporte/asignaciones?ids=${idsQuery}`,
+      ),
+    ]);
 
-  quimestre1: ResultadoQuimestreReporte | null;
-  quimestre2: ResultadoQuimestreReporte | null;
-  final: ResultadoFinalReporte | null;
-}
+    periodo = periodoResponse;
 
-export interface ReporteAsignacionesAdministracion {
-  asignacionIds: number[];
-  estudiantes: FilaCalificacionAdministracion[];
+    asignaciones = asignacionesResponse.data.filter(
+      (asignacion) =>
+        typeof asignacion.id === "number" &&
+        ids.includes(asignacion.id),
+    );
+
+    reporte = reporteResponse;
+  } catch (error) {
+    errorMsg =
+      error instanceof Error
+        ? error.message
+        : "No se pudieron cargar las calificaciones.";
+  }
+
+  try {
+    const fechasResponse =
+      await fetchAPI<FechasProcesosResponse>(
+        "/fechas_procesos/obtener?limit=100&search=fechas_notas",
+      );
+
+    fechas = fechasResponse.data ?? [];
+  } catch {
+    fechas = [];
+  }
+
+  const datosCurso = obtenerDatosCurso(asignaciones);
+
+  const backHref =
+    `/dashboard/secretaria/administracion-escolar?periodo=${periodoId}`;
+
+  return (
+    <div className="w-full p-4 sm:p-6">
+      <div className="mx-auto w-full max-w-[1500px] space-y-5">
+        <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"
+          >
+            <MdArrowBack />
+            Regresar
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled
+              title="Edición no disponible para Secretaría"
+              className="inline-flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-md bg-amber-400 text-gray-700 opacity-60"
+            >
+              <MdEdit className="h-5 w-5" />
+            </button>
+
+            <button
+              type="button"
+              disabled
+              title="Guardado no disponible para Secretaría"
+              className="inline-flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-md bg-emerald-600 text-white opacity-60"
+            >
+              <MdSave className="h-5 w-5" />
+            </button>
+
+            <BotonImprimir />
+          </div>
+        </div>
+
+        {errorMsg ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {errorMsg}
+          </div>
+        ) : (
+          <section className="administracion-print">
+            <CalificacionesTabs
+              estudiantes={reporte.estudiantes}
+              fechas={fechas}
+              materia={datosCurso.materia}
+              docente={datosCurso.docente}
+              nivel={datosCurso.nivel}
+              paralelo={
+                datosCurso.paralelo === "Varios"
+                  ? "Múltiples"
+                  : datosCurso.paralelo
+              }
+              jornada={datosCurso.jornada}
+              periodo={periodo?.descripcion ?? ""}
+            />
+          </section>
+        )}
+      </div>
+    </div>
+  );
 }
