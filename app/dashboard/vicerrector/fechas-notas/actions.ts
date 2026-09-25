@@ -103,7 +103,7 @@ export async function deleteFechaNota(
   id: number,
 ): Promise<FechaNotaActionResult> {
   try {
-    await fetchAPI(`/fechas_procesos/eliminar/${id}`, {
+    await fetchAPI(`/fechas_procesos/eliminar/${id}?proceso=fechas_notas`, {
       method: "DELETE",
     });
 

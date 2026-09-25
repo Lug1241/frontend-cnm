@@ -33,6 +33,8 @@ export default async function ListaCursoPage({
   searchParams: Promise<{
     periodo?: string;
     ids?: string;
+    nivel?: string;
+    curso?: string;
   }>;
 }) {
   const cookieStore = await cookies();
@@ -126,8 +128,19 @@ export default async function ListaCursoPage({
       asignaciones,
     );
 
-  const backHref =
-    `/dashboard/secretaria/administracion-escolar?periodo=${periodoId}`;
+  const backQuery = new URLSearchParams({
+    periodo: String(periodoId),
+  });
+
+  if (params.nivel) {
+    backQuery.set("nivel", params.nivel);
+  }
+
+  if (params.curso) {
+    backQuery.set("curso", params.curso);
+  }
+
+  const backHref = `/dashboard/secretaria/administracion-escolar?${backQuery.toString()}`;
 
   return (
     <div className="w-full p-4 sm:p-6">
@@ -219,15 +232,15 @@ export default async function ListaCursoPage({
               </div>
             </header>
 
-            <div className="overflow-x-auto border border-gray-300">
-              <table className="w-full border-collapse text-base">
+            <div className="mt-3 max-h-[600px] overflow-auto border border-gray-300">
+              <table className="w-full border-collapse text-[1.1rem]">
                 <thead className="bg-[#c7dcf8] text-black">
                   <tr>
-                    <th className="w-[70px] border border-gray-300 px-3 py-3 text-center">
+                    <th className="h-[50px] w-[60px] border border-gray-300 px-2 py-2 text-center align-middle">
                       Nro
                     </th>
 
-                    <th className="border border-gray-300 px-5 py-3 text-left">
+                    <th className="h-[50px] min-w-[280px] border border-gray-300 px-3 py-2 text-left align-middle">
                       Nómina de
                       Estudiantes
                     </th>
@@ -243,13 +256,13 @@ export default async function ListaCursoPage({
                         }
                         className="even:bg-gray-50"
                       >
-                        <td className="border border-gray-300 px-3 py-2 text-center">
+                        <td className="h-10 w-[60px] whitespace-nowrap border border-gray-300 px-2 py-1.5 text-center">
                           {
                             estudiante.nro
                           }
                         </td>
 
-                        <td className="border border-gray-300 px-5 py-2 text-left">
+                        <td className="h-10 min-w-[280px] whitespace-nowrap border border-gray-300 px-3 py-1.5 text-left">
                           {
                             estudiante.nombreCompleto
                           }

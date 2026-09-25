@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 
 import type {
-  DetalleParcialAdministracion,
   FilaCalificacionAdministracion,
 } from "@/types/AdministracionEscolar";
 import type {
@@ -14,6 +13,7 @@ import type {
 
 type MainTab = "q1" | "q2" | "final";
 type SubTab = "p1" | "p2" | "quimestre";
+type EscalaBe = "cualitativa" | "cuantitativa";
 
 interface Props {
   estudiantes: FilaCalificacionAdministracion[];
@@ -50,6 +50,45 @@ function valorSimple(value?: number | null) {
   return typeof value === "number"
     ? String(value)
     : "";
+}
+
+function entradaBe(value?: number | null) {
+  return typeof value === "number"
+    ? value.toFixed(2)
+    : "-";
+}
+
+function calculadoBe(value?: number | null) {
+  return (typeof value === "number"
+    ? value
+    : 0
+  ).toFixed(2);
+}
+
+function convertirNotaBe(
+  value: number | null | undefined,
+  escala: EscalaBe,
+) {
+  const nota =
+    typeof value === "number" ? value : 0;
+
+  if (escala === "cuantitativa") {
+    if (nota >= 9) return "DA";
+    if (nota >= 7) return "AA";
+    if (nota > 4) return "PA";
+    return "NA";
+  }
+
+  if (nota >= 9.5) return "A+";
+  if (nota >= 9) return "A-";
+  if (nota >= 8.5) return "B+";
+  if (nota >= 7.5) return "B-";
+  if (nota >= 7) return "C+";
+  if (nota >= 6.5) return "C-";
+  if (nota >= 4) return "D+";
+  if (nota >= 3.5) return "D-";
+  if (nota >= 2) return "E+";
+  return "E-";
 }
 
 function abreviarNivel(nivel?: string | null) {
@@ -221,6 +260,112 @@ function CabeceraVertical({
         {children}
       </span>
     </th>
+  );
+}
+
+interface GrupoTablaBe {
+  titulo: string;
+  columnas: number;
+}
+
+interface ColumnaTablaBe {
+  titulo: string;
+  clase?: string;
+  valor: (
+    estudiante: FilaCalificacionAdministracion,
+  ) => React.ReactNode;
+}
+
+function TablaBe({
+  estudiantes,
+  grupos,
+  columnas,
+  anchoMinimo,
+}: {
+  estudiantes: FilaCalificacionAdministracion[];
+  grupos: GrupoTablaBe[];
+  columnas: ColumnaTablaBe[];
+  anchoMinimo: number;
+}) {
+  return (
+    <div className="overflow-x-auto border border-gray-300">
+      <table
+        className="w-full border-collapse text-xs"
+        style={{ minWidth: anchoMinimo }}
+      >
+        <thead>
+          <tr>
+            {grupos.map(
+              (grupo, index) => (
+                <th
+                  key={`${grupo.titulo}-${index}`}
+                  colSpan={grupo.columnas}
+                  className="border border-gray-300 bg-white px-3 py-3 text-center font-bold"
+                >
+                  {grupo.titulo}
+                </th>
+              ),
+            )}
+          </tr>
+
+          <tr>
+            <th className="w-14 border border-gray-300 bg-[#c7dcf8] px-2 py-3 text-center">
+              Nro
+            </th>
+
+            <th className="min-w-72 border border-gray-300 bg-[#c7dcf8] px-3 py-3 text-center">
+              Nómina de Estudiantes
+            </th>
+
+            {columnas.map(
+              (columna, index) => (
+                <CabeceraVertical
+                  key={`${columna.titulo}-${index}`}
+                >
+                  {columna.titulo}
+                </CabeceraVertical>
+              ),
+            )}
+          </tr>
+        </thead>
+
+        <tbody>
+          {estudiantes.map(
+            (estudiante, index) => (
+              <tr
+                key={
+                  estudiante.idInscripcion
+                }
+                className="even:bg-gray-50"
+              >
+                <td className="border border-gray-300 px-2 py-2 text-center">
+                  {index + 1}
+                </td>
+
+                <td className="border border-gray-300 px-3 py-2">
+                  {
+                    estudiante.nombreCompleto
+                  }
+                </td>
+
+                {columnas.map(
+                  (columna, columnIndex) => (
+                    <td
+                      key={columnIndex}
+                      className={`border border-gray-300 px-2 py-2 text-center ${columna.clase ?? ""}`}
+                    >
+                      {columna.valor(
+                        estudiante,
+                      )}
+                    </td>
+                  ),
+                )}
+              </tr>
+            ),
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -421,133 +566,283 @@ function TablaParcialBe({
   estudiantes,
   quimestre,
   parcial,
+  escala,
 }: {
   estudiantes: FilaCalificacionAdministracion[];
   quimestre: "q1" | "q2";
   parcial: "p1" | "p2";
+  escala: EscalaBe;
 }) {
+  const detalle = (
+    estudiante: FilaCalificacionAdministracion,
+  ) =>
+    estudiante.detalleParciales?.[
+      quimestre
+    ]?.[parcial];
+
   return (
-    <div className="overflow-x-auto border border-gray-300">
-      <table className="w-full min-w-[950px] border-collapse text-sm">
-        <thead className="bg-[#c7dcf8]">
-          <tr>
-            <th className="border border-gray-300 px-3 py-3">
-              Nro
-            </th>
+    <TablaBe
+      estudiantes={estudiantes}
+      anchoMinimo={1450}
+      grupos={[
+        { titulo: "", columnas: 2 },
+        {
+          titulo:
+            "Evaluación de Aprendizajes",
+          columnas: 5,
+        },
+        {
+          titulo: "Evaluaciones Sumativas",
+          columnas: 5,
+        },
+        { titulo: "", columnas: 2 },
+      ]}
+      columnas={[
+        {
+          titulo: "INSUMO 1",
+          clase: "bg-rose-200/70",
+          valor: (estudiante) =>
+            entradaBe(
+              detalle(estudiante)?.insumo1,
+            ),
+        },
+        {
+          titulo: "INSUMO 2",
+          clase: "bg-rose-200/70",
+          valor: (estudiante) =>
+            entradaBe(
+              detalle(estudiante)?.insumo2,
+            ),
+        },
+        {
+          titulo: "PROMEDIO",
+          valor: (estudiante) =>
+            calculadoBe(
+              detalle(estudiante)
+                ?.promedioInsumos,
+            ),
+        },
+        {
+          titulo:
+            escala === "cualitativa"
+              ? "CUALITATIVA"
+              : "CUANTITATIVA",
+          valor: (estudiante) =>
+            convertirNotaBe(
+              detalle(estudiante)
+                ?.promedioInsumos,
+              escala,
+            ),
+        },
+        {
+          titulo: "PONDERACIÓN 70%",
+          valor: (estudiante) =>
+            calculadoBe(
+              detalle(estudiante)
+                ?.ponderacion70,
+            ),
+        },
+        {
+          titulo: "EVALUACIÓN SUMATIVA",
+          clase: "bg-rose-200/70",
+          valor: (estudiante) =>
+            entradaBe(
+              detalle(estudiante)
+                ?.evaluacion,
+            ),
+        },
+        {
+          titulo:
+            "EVALUACIÓN MEJORAMIENTO",
+          clase: "bg-rose-200/70",
+          valor: (estudiante) =>
+            entradaBe(
+              detalle(estudiante)
+                ?.mejoramiento,
+            ),
+        },
+        {
+          titulo: "PROMEDIO DE MEJORA",
+          valor: (estudiante) =>
+            entradaBe(
+              detalle(estudiante)
+                ?.promedioMejora,
+            ),
+        },
+        {
+          titulo: "PROMEDIO SUMATIVAS",
+          valor: (estudiante) =>
+            calculadoBe(
+              detalle(estudiante)
+                ?.promedioSumativas,
+            ),
+        },
+        {
+          titulo: "PONDERACIÓN 30%",
+          valor: (estudiante) =>
+            calculadoBe(
+              detalle(estudiante)
+                ?.ponderacion30,
+            ),
+        },
+        {
+          titulo: "NOTA PARCIAL",
+          valor: (estudiante) =>
+            calculadoBe(
+              detalle(estudiante)
+                ?.notaParcial,
+            ),
+        },
+        {
+          titulo:
+            escala === "cualitativa"
+              ? "CUALITATIVA"
+              : "CUANTITATIVA",
+          valor: (estudiante) =>
+            convertirNotaBe(
+              detalle(estudiante)
+                ?.notaParcial,
+              escala,
+            ),
+        },
+      ]}
+    />
+  );
+}
 
-            <th className="border border-gray-300 px-3 py-3 text-left">
-              Nómina de Estudiantes
-            </th>
+function TablaQuimestreBe({
+  estudiantes,
+  quimestre,
+  escala,
+}: {
+  estudiantes: FilaCalificacionAdministracion[];
+  quimestre: "q1" | "q2";
+  escala: EscalaBe;
+}) {
+  const resultado = (
+    estudiante: FilaCalificacionAdministracion,
+  ) =>
+    quimestre === "q1"
+      ? estudiante.quimestre1
+      : estudiante.quimestre2;
 
-            <th className="border border-gray-300 px-3 py-3">
-              Insumo 1
-            </th>
+  const cualitativa =
+    escala === "cualitativa"
+      ? "CUALITATIVA"
+      : "CUANTITATIVA";
 
-            <th className="border border-gray-300 px-3 py-3">
-              Insumo 2
-            </th>
-
-            <th className="border border-gray-300 px-3 py-3">
-              Ponderación 70%
-            </th>
-
-            <th className="border border-gray-300 px-3 py-3">
-              Evaluación Sumativa
-            </th>
-
-            <th className="border border-gray-300 px-3 py-3">
-              Mejoramiento
-            </th>
-
-            <th className="border border-gray-300 px-3 py-3">
-              Ponderación 30%
-            </th>
-
-            <th className="border border-gray-300 px-3 py-3">
-              Nota Parcial
-            </th>
-
-            <th className="border border-gray-300 px-3 py-3">
-              Nivel
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {estudiantes.map(
-            (estudiante, index) => {
-              const detalle =
-                estudiante.detalleParciales?.[
-                  quimestre
-                ]?.[parcial];
-
-              return (
-                <tr
-                  key={
-                    estudiante.idInscripcion
-                  }
-                  className="even:bg-gray-50"
-                >
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {index + 1}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2">
-                    {
-                      estudiante.nombreCompleto
-                    }
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {numero(detalle?.insumo1)}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {numero(detalle?.insumo2)}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {numero(
-                      detalle?.ponderacion70,
-                    )}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {numero(
-                      detalle?.evaluacion,
-                    )}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {numero(
-                      detalle?.mejoramiento,
-                    )}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {numero(
-                      detalle?.ponderacion30,
-                    )}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {numero(
-                      detalle?.notaParcial,
-                    )}
-                  </td>
-
-                  <td className="border border-gray-300 px-3 py-2 text-center">
-                    {abreviarNivel(
-                      estudiante.nivel,
-                    )}
-                  </td>
-                </tr>
-              );
-            },
-          )}
-        </tbody>
-      </table>
-    </div>
+  return (
+    <TablaBe
+      estudiantes={estudiantes}
+      anchoMinimo={1350}
+      grupos={[
+        { titulo: "", columnas: 2 },
+        {
+          titulo:
+            "RESUMEN DE APRENDIZAJES",
+          columnas: 7,
+        },
+        {
+          titulo: "EVALUACIÓN",
+          columnas: 2,
+        },
+        { titulo: "", columnas: 2 },
+      ]}
+      columnas={[
+        {
+          titulo: "PRIMER PARCIAL",
+          valor: (estudiante) =>
+            calculadoBe(
+              resultado(estudiante)
+                ?.parcial1,
+            ),
+        },
+        {
+          titulo: cualitativa,
+          valor: (estudiante) =>
+            convertirNotaBe(
+              resultado(estudiante)
+                ?.parcial1,
+              escala,
+            ),
+        },
+        {
+          titulo: "SEGUNDO PARCIAL",
+          valor: (estudiante) =>
+            calculadoBe(
+              resultado(estudiante)
+                ?.parcial2,
+            ),
+        },
+        {
+          titulo: cualitativa,
+          valor: (estudiante) =>
+            convertirNotaBe(
+              resultado(estudiante)
+                ?.parcial2,
+              escala,
+            ),
+        },
+        {
+          titulo: "PROMEDIO",
+          valor: (estudiante) =>
+            calculadoBe(
+              resultado(estudiante)
+                ?.promedioParciales,
+            ),
+        },
+        {
+          titulo: cualitativa,
+          valor: (estudiante) =>
+            convertirNotaBe(
+              resultado(estudiante)
+                ?.promedioParciales,
+              escala,
+            ),
+        },
+        {
+          titulo: "PONDERACIÓN 70%",
+          valor: (estudiante) =>
+            calculadoBe(
+              resultado(estudiante)
+                ?.ponderacion70,
+            ),
+        },
+        {
+          titulo: "EXAMEN",
+          clase: "bg-emerald-100",
+          valor: (estudiante) =>
+            entradaBe(
+              resultado(estudiante)?.examen,
+            ),
+        },
+        {
+          titulo: "PONDERACIÓN 30%",
+          valor: (estudiante) =>
+            calculadoBe(
+              resultado(estudiante)
+                ?.ponderacion30,
+            ),
+        },
+        {
+          titulo: "PROMEDIO QUIMESTRAL",
+          valor: (estudiante) =>
+            calculadoBe(
+              resultado(estudiante)
+                ?.promedioQuimestral,
+            ),
+        },
+        {
+          titulo: cualitativa,
+          valor: (estudiante) =>
+            convertirNotaBe(
+              resultado(estudiante)
+                ?.promedioQuimestral,
+              escala,
+            ),
+        },
+      ]}
+    />
   );
 }
 
@@ -747,6 +1042,77 @@ function Estado({
   );
 }
 
+function TablaFinalBe({
+  estudiantes,
+  escala,
+}: {
+  estudiantes: FilaCalificacionAdministracion[];
+  escala: EscalaBe;
+}) {
+  return (
+    <TablaBe
+      estudiantes={estudiantes}
+      anchoMinimo={850}
+      grupos={[
+        { titulo: "", columnas: 2 },
+        {
+          titulo: "RESULTADOS FINALES",
+          columnas: 4,
+        },
+        { titulo: "", columnas: 1 },
+      ]}
+      columnas={[
+        {
+          titulo: "PRIMER QUIMESTRE",
+          valor: (estudiante) =>
+            calculadoBe(
+              estudiante.final
+                ?.primerQuimestre,
+            ),
+        },
+        {
+          titulo: "SEGUNDO QUIMESTRE",
+          valor: (estudiante) =>
+            calculadoBe(
+              estudiante.final
+                ?.segundoQuimestre,
+            ),
+        },
+        {
+          titulo: "PROMEDIO FINAL",
+          valor: (estudiante) =>
+            calculadoBe(
+              estudiante.final
+                ?.promedioFinal,
+            ),
+        },
+        {
+          titulo:
+            escala === "cualitativa"
+              ? "CUALITATIVA"
+              : "CUANTITATIVA",
+          valor: (estudiante) =>
+            convertirNotaBe(
+              estudiante.final
+                ?.promedioFinal,
+              escala,
+            ),
+        },
+        {
+          titulo: "ESTADO",
+          valor: (estudiante) => (
+            <Estado
+              estado={
+                estudiante.final?.estado
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  );
+}
+
 function TablaFinal({
   estudiantes,
 }: {
@@ -938,9 +1304,15 @@ export default function CalificacionesTabs({
   const [subQ2, setSubQ2] =
     useState<SubTab>("p1");
 
+  const [escalaBe, setEscalaBe] =
+    useState<EscalaBe>("cualitativa");
+
   const esBE =
-    estudiantes[0]?.tipoCalificacion ===
-    "BE";
+    estudiantes.some(
+      (estudiante) =>
+        estudiante.tipoCalificacion ===
+        "BE",
+    ) || /(^|\s)BE($|\s)/i.test(nivel);
 
   const fechaPorDescripcion = useMemo(
     () =>
@@ -1029,6 +1401,58 @@ export default function CalificacionesTabs({
       <h1 className="print:hidden text-center text-2xl font-bold text-[#1265f3] sm:text-3xl">
         Gestión de Calificaciones
       </h1>
+
+      {esBE && (
+        <fieldset className="print:hidden flex flex-wrap items-center justify-end gap-4 text-sm text-gray-700">
+          <legend className="sr-only">
+            Escala de calificaciones
+          </legend>
+
+          <span className="font-semibold">
+            Escala:
+          </span>
+
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="radio"
+              name="escala-administracion-be"
+              value="cualitativa"
+              checked={
+                escalaBe ===
+                "cualitativa"
+              }
+              onChange={() =>
+                setEscalaBe(
+                  "cualitativa",
+                )
+              }
+              className="h-4 w-4 accent-[#00408a]"
+            />
+
+            Cualitativa
+          </label>
+
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="radio"
+              name="escala-administracion-be"
+              value="cuantitativa"
+              checked={
+                escalaBe ===
+                "cuantitativa"
+              }
+              onChange={() =>
+                setEscalaBe(
+                  "cuantitativa",
+                )
+              }
+              className="h-4 w-4 accent-[#00408a]"
+            />
+
+            Cuantitativa
+          </label>
+        </fieldset>
+      )}
 
       <div className="print:hidden grid grid-cols-3 border-b border-gray-300">
         {[
@@ -1133,14 +1557,22 @@ export default function CalificacionesTabs({
 
         <div className="mt-4">
           {mainTab === "final" ? (
-            <TablaFinal
-              estudiantes={estudiantes}
-            />
+            esBE ? (
+              <TablaFinalBe
+                estudiantes={estudiantes}
+                escala={escalaBe}
+              />
+            ) : (
+              <TablaFinal
+                estudiantes={estudiantes}
+              />
+            )
           ) : esParcial ? (
             esBE ? (
               <TablaParcialBe
                 estudiantes={estudiantes}
                 quimestre={mainTab}
+                escala={escalaBe}
                 parcial={
                   subActivo as
                     | "p1"
@@ -1159,10 +1591,18 @@ export default function CalificacionesTabs({
               />
             )
           ) : (
-            <TablaQuimestre
-              estudiantes={estudiantes}
-              quimestre={mainTab}
-            />
+            esBE ? (
+              <TablaQuimestreBe
+                estudiantes={estudiantes}
+                quimestre={mainTab}
+                escala={escalaBe}
+              />
+            ) : (
+              <TablaQuimestre
+                estudiantes={estudiantes}
+                quimestre={mainTab}
+              />
+            )
           )}
         </div>
       </div>
