@@ -4,12 +4,18 @@ import Link from "next/link";
 import {
   FormEvent,
 <<<<<<< HEAD
+<<<<<<< HEAD
   useEffect,
   useMemo,
   useRef,
 =======
   useMemo,
 >>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
+=======
+  useEffect,
+  useMemo,
+  useRef,
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
   useState,
 } from "react";
 import {
@@ -68,6 +74,7 @@ function BroomIcon() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function ordenarDias(dias: string[]) {
   return [...dias].sort((a, b) => {
 =======
@@ -111,6 +118,10 @@ function obtenerDias(
 
   return dias.sort((a, b) => {
 >>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
+=======
+function ordenarDias(dias: string[]) {
+  return [...dias].sort((a, b) => {
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
     const posicionA =
       ORDEN_DIAS.indexOf(a);
 
@@ -132,6 +143,9 @@ function obtenerDias(
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
 function obtenerSesiones(
   asignaciones: Asignacion[],
 ) {
@@ -171,8 +185,11 @@ function obtenerSesiones(
     );
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
+=======
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
 function obtenerParalelos(
   asignaciones: Asignacion[],
 ) {
@@ -216,10 +233,14 @@ export default function AdministracionEscolarClient({
   );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
   const cursoRestaurado = cursos.find(
     (curso) => curso.id === cursoInicial,
   );
 
+<<<<<<< HEAD
   const [nivelActivo, setNivelActivo] =
     useState(
       cursoRestaurado?.nivel ??
@@ -280,8 +301,66 @@ export default function AdministracionEscolarClient({
   }, [cursoRestaurado]);
 
 =======
+=======
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
   const [nivelActivo, setNivelActivo] =
-    useState(niveles[0] ?? "");
+    useState(
+      cursoRestaurado?.nivel ??
+        (nivelInicial &&
+        niveles.includes(nivelInicial)
+          ? nivelInicial
+          : niveles[0] ?? ""),
+    );
+
+  const [cursoResaltado, setCursoResaltado] =
+    useState(cursoRestaurado?.id ?? null);
+
+  const pestañasRef = useRef(
+    new Map<string, HTMLButtonElement>(),
+  );
+
+  useEffect(() => {
+    if (!cursoRestaurado) {
+      return;
+    }
+
+    const comportamiento = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+      ? "auto"
+      : "smooth";
+
+    const animacion = window.requestAnimationFrame(
+      () => {
+        pestañasRef.current
+          .get(cursoRestaurado.nivel)
+          ?.scrollIntoView({
+            behavior: comportamiento,
+            block: "nearest",
+            inline: "center",
+          });
+
+        document
+          .getElementById(
+            `curso-${cursoRestaurado.id}`,
+          )
+          ?.scrollIntoView({
+            behavior: comportamiento,
+            block: "center",
+          });
+      },
+    );
+
+    const temporizador = window.setTimeout(
+      () => setCursoResaltado(null),
+      1500,
+    );
+
+    return () => {
+      window.cancelAnimationFrame(animacion);
+      window.clearTimeout(temporizador);
+    };
+  }, [cursoRestaurado]);
 
 >>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
   const [busqueda, setBusqueda] =
@@ -482,6 +561,7 @@ export default function AdministracionEscolarClient({
                     String(periodoId),
                   ids: ids.join(","),
 <<<<<<< HEAD
+<<<<<<< HEAD
                   nivel: curso.nivel,
                   curso: curso.id,
                 });
@@ -514,15 +594,14 @@ export default function AdministracionEscolarClient({
                     </h2>
 
 =======
+=======
+                  nivel: curso.nivel,
+                  curso: curso.id,
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
                 });
 
-              const horarios =
-                obtenerHorarios(
-                  curso.asignaciones,
-                );
-
-              const dias =
-                obtenerDias(
+              const sesiones =
+                obtenerSesiones(
                   curso.asignaciones,
                 );
 
@@ -534,7 +613,12 @@ export default function AdministracionEscolarClient({
               return (
                 <article
                   key={curso.id}
-                  className="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                  id={`curso-${curso.id}`}
+                  className={`scroll-mt-6 flex flex-col justify-between rounded-xl border bg-white p-5 transition-[border-color,box-shadow,background-color] duration-700 ${
+                    cursoResaltado === curso.id
+                      ? "border-[#00408a] bg-blue-50/60 shadow-md ring-2 ring-[#00408a]"
+                      : "border-gray-200 shadow-sm"
+                  }`}
                 >
                   <div>
                     <h2 className="text-lg font-bold text-[#00408a]">
@@ -558,6 +642,9 @@ export default function AdministracionEscolarClient({
 
                     <div className="mt-4 space-y-2 text-sm text-gray-700">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
                       {sesiones.map(
                         (sesion) => (
                           <div
@@ -569,6 +656,7 @@ export default function AdministracionEscolarClient({
                             <strong>
                               Horario:
                             </strong>
+<<<<<<< HEAD
 
                             <span>
                               {
@@ -615,6 +703,37 @@ export default function AdministracionEscolarClient({
                         {dias.join(", ")}
                       </p>
 >>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
+=======
+
+                            <span>
+                              {
+                                sesion.horario
+                              }
+                            </span>
+
+                            <strong>
+                              Días:
+                            </strong>
+
+                            <span>
+                              {sesion.dias.join(
+                                ", ",
+                              ) || "-"}
+                            </span>
+                          </div>
+                        ),
+                      )}
+
+                      {sesiones.length ===
+                        0 && (
+                        <p>
+                          <strong>
+                            Horario:
+                          </strong>{" "}
+                          -
+                        </p>
+                      )}
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
 
                       <p>
                         <strong>
@@ -628,10 +747,14 @@ export default function AdministracionEscolarClient({
                   </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                   <div className="mt-5 flex flex-wrap items-center justify-start gap-2 border-t border-gray-100 pt-4">
 =======
                   <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-gray-100 pt-4">
 >>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
+=======
+                  <div className="mt-5 flex flex-wrap items-center justify-start gap-2 border-t border-gray-100 pt-4">
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
                     <Link
                       href={`/dashboard/secretaria/administracion-escolar/lista?${query.toString()}`}
                       className="inline-flex items-center gap-2 rounded-md border border-[#00408a] px-3 py-2 text-sm font-semibold text-[#00408a] transition hover:bg-blue-50"

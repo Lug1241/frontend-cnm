@@ -148,10 +148,15 @@ export default async function AdministracionEscolarPage({
                 periodoSeleccionado.descripcion
               }
 <<<<<<< HEAD
+<<<<<<< HEAD
               nivelInicial={params.nivel}
               cursoInicial={params.curso}
 =======
 >>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
+=======
+              nivelInicial={params.nivel}
+              cursoInicial={params.curso}
+>>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
             />
           </>
         )}
