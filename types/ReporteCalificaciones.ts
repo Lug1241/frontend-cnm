@@ -24,6 +24,7 @@ export interface EstudianteReporteResumen {
   segundoNombre?: string;
   primerApellido: string;
   segundoApellido?: string;
+  jornada?: string;
   matriculas?: MatriculaResumen[];
 }
 
