@@ -32,6 +32,13 @@ export const SYSTEM_MODULES: SystemModule[] = [
     hideInGrid: true,
   },
   {
+    id: "informacion-representante",
+    label: "Información representante",
+    icon: "👤",
+    path: "/dashboard/representante/perfil",
+    allowedTypes: ["representante"],
+  },
+  {
     id: "configuracion",
     label: "Configuración",
     icon: "⚙️",
@@ -112,6 +119,22 @@ export const SYSTEM_MODULES: SystemModule[] = [
     icon: "📨",
     path: "/dashboard/solicitudes",
     allowedTypes: ["docente", "representante"],
+  },
+  {
+    id: "fechas-procesos",
+    label: "Fechas Procesos",
+    icon: "📅",
+    path: "/dashboard/secretaria/procesos",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Secretaria"],
+  },
+  {
+    id: "fechas-notas",
+    label: "Fechas para notas",
+    icon: "📅",
+    path: "/dashboard/vicerrector/fechas-notas",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Vicerrector"],
   },
   {
     id: "cambiar-contrasena",
