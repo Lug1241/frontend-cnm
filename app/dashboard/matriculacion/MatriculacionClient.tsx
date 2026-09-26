@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import BuscadorEstudiante from "./components/BuscadorEstudiante";
 import BuscadorMateria from "./components/BuscadorMateria";
 import HorarioMatriz from "./components/HorarioMatriz";
 import TablaSeleccionadas from "./components/TablaSeleccionadas";
+import AlertaPeriodoInactivo from "./components/AlertaPeriodoInactivo";
+import TablaEstudiantesRepresentante from "./components/TablaEstudiantesRepresentante";
+import BannerEstudianteMatriculando from "./components/BannerEstudianteMatriculando";
 import Toast from "@/app/components/ui/Toast";
+import { UserType } from "@/app/config/menu.config";
 import {
   AsignacionMatriculacion,
   crearInscripcionesAction,
@@ -17,6 +22,9 @@ import {
   obtenerMatriculaAction,
   InscripcionMatriculacion,
   MateriaMatriculacion,
+  EstadoPeriodoMatricula,
+  VerificacionDocsRepresentante,
+  EstudianteRepresentanteItem,
 } from "./actions";
 
 // Define los tipos base (ajústalos según tus interfaces globales)
@@ -55,9 +63,17 @@ function normalizarNivelMateria(nivel: string) {
 export default function MatriculacionClient({
   periodoActivo,
   tipoInicial,
+  userType = "docente",
+  estadoPeriodoMatricula,
+  verificacionDocsRepresentante,
+  estudiantesRepresentante = [],
 }: {
   periodoActivo: PeriodoActivo | null;
   tipoInicial: "grupales" | "individuales";
+  userType?: UserType;
+  estadoPeriodoMatricula?: EstadoPeriodoMatricula | null;
+  verificacionDocsRepresentante?: VerificacionDocsRepresentante | null;
+  estudiantesRepresentante?: EstudianteRepresentanteItem[];
 }) {
   const [estudiante, setEstudiante] = useState<EstudianteSeleccionado | null>(null);
   const [matriculaId, setMatriculaId] = useState<number | null>(null);
@@ -285,18 +301,62 @@ export default function MatriculacionClient({
       <div className="px-4 pt-6 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-[#003366]">Matriculación</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Periodo {periodoActivo?.descripcion || "no disponible"}
-            </p>
+            <h1 className="text-2xl font-bold text-[#003366]">
+              {userType === "representante"
+                ? `Periodo académico activo ${periodoActivo?.descripcion || ""}`
+                : "Matriculación"}
+            </h1>
+            {userType !== "representante" && (
+              <p className="mt-1 text-sm text-gray-500">
+                Periodo {periodoActivo?.descripcion || "no disponible"}
+              </p>
+            )}
           </div>
-          {estudiante && (
+          {estudiante && userType !== "representante" && (
             <button onClick={resetStudent} className="text-sm font-medium text-[#003366] hover:underline">
               Cambiar estudiante
             </button>
           )}
         </div>
       </div>
+
+      {userType === "representante" &&
+        estadoPeriodoMatricula &&
+        !estadoPeriodoMatricula.periodoActivo && (
+          <div className="px-4 sm:px-6">
+            <AlertaPeriodoInactivo
+              mensaje={estadoPeriodoMatricula.mensaje}
+              fechaInicio={estadoPeriodoMatricula.fechaInicio}
+              fechaFin={estadoPeriodoMatricula.fechaFin}
+            />
+          </div>
+        )}
+
+      {userType === "representante" &&
+        verificacionDocsRepresentante &&
+        !verificacionDocsRepresentante.datosActualizados && (
+          <div className="mx-4 my-2 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 sm:mx-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold text-amber-800">
+                  Documentación del representante pendiente
+                </p>
+                <p className="mt-0.5 text-xs text-amber-700 sm:text-sm">
+                  {verificacionDocsRepresentante.message} (
+                  {verificacionDocsRepresentante.faltantes?.join(", ") ||
+                    "Cédula / Croquis"}
+                  ).
+                </p>
+              </div>
+              <Link
+                href="/dashboard/representante/perfil"
+                className="inline-flex shrink-0 items-center justify-center rounded-md bg-[#003F89] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#003366]"
+              >
+                Actualizar documentos
+              </Link>
+            </div>
+          </div>
+        )}
 
       {!periodoActivo && (
         <div className="mx-4 rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700 sm:mx-6">
@@ -316,13 +376,34 @@ export default function MatriculacionClient({
 
       {!estudiante ? (
         <div className="px-4 sm:px-6">
-          <div className="max-w-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <BuscadorEstudiante onSelect={handleStudentSelect} />
-            {isLoading && <p className="mt-3 text-sm text-gray-500">Preparando matrícula...</p>}
-          </div>
+          {userType === "representante" ? (
+            <TablaEstudiantesRepresentante
+              estudiantes={estudiantesRepresentante}
+              periodoMatriculaActivo={estadoPeriodoMatricula?.periodoActivo ?? true}
+              docsRepresentanteValidos={
+                verificacionDocsRepresentante?.datosActualizados ?? true
+              }
+              onSelectEstudiante={handleStudentSelect}
+              mensajePeriodo={estadoPeriodoMatricula?.mensaje}
+            />
+          ) : (
+            <div className="max-w-2xl border border-gray-200 bg-white p-5 shadow-sm">
+              <BuscadorEstudiante onSelect={handleStudentSelect} />
+            </div>
+          )}
+          {isLoading && <p className="mt-3 text-sm text-gray-500">Preparando matrícula...</p>}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 px-4 pb-6 sm:px-6 lg:grid-cols-12">
+        <>
+          {userType === "representante" && (
+            <div className="px-4 sm:px-6">
+              <BannerEstudianteMatriculando
+                estudiante={estudiante}
+                onCambiarEstudiante={resetStudent}
+              />
+            </div>
+          )}
+          <div className="grid grid-cols-1 gap-5 px-4 pb-6 sm:px-6 lg:grid-cols-12">
           <section className="border border-gray-200 bg-white p-5 shadow-sm lg:col-span-5">
             <div className="mb-5 border-b border-gray-200 pb-4">
               <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Estudiante</p>
@@ -425,6 +506,7 @@ export default function MatriculacionClient({
             </div>
           </section>
         </div>
+        </>
       )}
     </div>
   );

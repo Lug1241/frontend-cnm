@@ -58,6 +58,128 @@ export async function buscarEstudiantesAction(term: string) {
   }
 }
 
+export interface EstadoPeriodoMatricula {
+  periodoActivo: boolean;
+  proceso?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  mensaje: string;
+}
+
+export async function obtenerEstadoPeriodoMatriculaAction(): Promise<{
+  success: boolean;
+  data?: EstadoPeriodoMatricula;
+  error?: string;
+}> {
+  try {
+    const response = await fetchAPI<EstadoPeriodoMatricula>("/fechas_procesos/matricula");
+    return {
+      success: true,
+      data: response,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: getErrorMessage(error, "No se pudo verificar el período de matrícula."),
+    };
+  }
+}
+
+export interface VerificacionDocsRepresentante {
+  datosActualizados: boolean;
+  message: string;
+  faltantes?: string[];
+}
+
+export async function verificarDocumentosRepresentanteAction(cedula: string): Promise<{
+  success: boolean;
+  data?: VerificacionDocsRepresentante;
+  error?: string;
+}> {
+  try {
+    const response = await fetchAPI<VerificacionDocsRepresentante>(
+      `/representantes/verificar-documentos/${encodeURIComponent(cedula)}`,
+    );
+    return {
+      success: true,
+      data: response,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: getErrorMessage(error, "No se pudieron verificar los documentos del representante."),
+    };
+  }
+}
+
+export interface VerificacionDocsEstudiante {
+  datosActualizados: boolean;
+  message: string;
+}
+
+export async function verificarDocumentosEstudianteAction(cedula: string): Promise<{
+  success: boolean;
+  data?: VerificacionDocsEstudiante;
+  error?: string;
+}> {
+  try {
+    const response = await fetchAPI<VerificacionDocsEstudiante>(
+      `/estudiantes/verificar-cedula/${encodeURIComponent(cedula)}`,
+    );
+    return {
+      success: true,
+      data: response,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: getErrorMessage(error, "No se pudieron verificar los documentos del estudiante."),
+    };
+  }
+}
+
+export interface EstudianteRepresentanteItem {
+  id: number;
+  nroCedula: string;
+  primerNombre: string;
+  segundoNombre?: string;
+  primerApellido: string;
+  segundoApellido?: string;
+  fechaNacimiento?: string;
+  genero: string;
+  jornada: string;
+  nivel: string;
+}
+
+export async function obtenerEstudiantesRepresentanteAction(cedula: string): Promise<{
+  success: boolean;
+  data: EstudianteRepresentanteItem[];
+  error?: string;
+}> {
+  try {
+    const response = await fetchAPI<EstudianteRepresentanteItem[]>(
+      `/estudiantes/representante/${encodeURIComponent(cedula)}`,
+    );
+    return {
+      success: true,
+      data: Array.isArray(response) ? response : [],
+    };
+  } catch (error: unknown) {
+    const message = getErrorMessage(error, "");
+    if (message.toLowerCase().includes("no se encontraron") || message.toLowerCase().includes("404")) {
+      return {
+        success: true,
+        data: [],
+      };
+    }
+    return {
+      success: false,
+      data: [],
+      error: getErrorMessage(error, "No se pudieron obtener los estudiantes del representante."),
+    };
+  }
+}
+
 export async function obtenerMateriasAction(tipo: "Grupal" | "Individual") {
   try {
     const response = await fetchAPI<{ data: MateriaMatriculacion[] }>(
