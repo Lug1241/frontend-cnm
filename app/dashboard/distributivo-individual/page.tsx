@@ -23,15 +23,6 @@ function parsePage(value?: string) {
   return Number.isSafeInteger(page) && page > 0 ? page : 1;
 }
 
-function normalizeTeacherRows(rows: any[]) {
-  return rows
-    .filter((row) => row?.asignacion)
-    .map((row) => ({
-      ...row.asignacion,
-      estudiante: row.matricula?.estudiante,
-    }));
-}
-
 export default async function DistributivoIndividualRoute({
   searchParams,
 }: {
@@ -92,10 +83,7 @@ export default async function DistributivoIndividualRoute({
           const teacherResponse = await fetchAPI<IndividualResponse>(
             `/inscripcion/obtener/docente/${encodeURIComponent(cedula)}/${periodo}?${query.toString()}`,
           );
-          response = {
-            ...teacherResponse,
-            data: normalizeTeacherRows(teacherResponse.data ?? []),
-          };
+          response = teacherResponse;
         }
       } else {
         if (nivel) query.set("nivel", nivel);
