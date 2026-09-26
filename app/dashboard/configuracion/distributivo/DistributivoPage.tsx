@@ -7,6 +7,7 @@ import DeleteModal from "@/app/components/ui/DeleteModal";
 import { type Asignacion } from "@/types/Asignacion";
 import { createAsignacion, updateAsignacion, deleteAsignacion } from "./actions";
 import AsignacionModal from "./AsignacionModal"; 
+import AutoCompleteInput from "@/app/components/ui/AutoCompleteInput";
 
 interface Periodo {
   id: number;
@@ -23,6 +24,13 @@ interface Props {
   initialSearch: string;
   totalPages: number;
   currentPage: number;
+}
+
+interface SearchOption {
+  id: string;
+  label: string;
+  detail: string;
+  searchValue: string;
 }
 
 export default function DistributivoPage({
@@ -45,6 +53,25 @@ export default function DistributivoPage({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedToEdit, setSelectedToEdit] = useState<Asignacion | null>(null);
   const [selectedToDelete, setSelectedToDelete] = useState<Asignacion | null>(null);
+
+  const searchOptions: SearchOption[] = [
+    ...materiasList.map((materia) => ({
+      id: `materia-${materia.id}`,
+      label: materia.nombre,
+      detail: materia.nivel,
+      searchValue: materia.nombre,
+    })),
+    ...docentesList.map((docente) => ({
+      id: `docente-${docente.id}`,
+      label: `${docente.primerNombre} ${docente.primerApellido}`.trim(),
+      detail: "Docente",
+      searchValue: `${docente.primerNombre} ${docente.primerApellido}`.trim(),
+    })),
+  ];
+
+  const selectedSearchOption = searchValue
+    ? { id: "search", label: searchValue, detail: "", searchValue }
+    : null;
 
   const currentQuery = searchParams.get("search") ?? "";
 
@@ -116,18 +143,16 @@ export default function DistributivoPage({
           <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
             
             {/* Buscador */}
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder="Buscar por materia o docente."
-                className="border border-gray-300 rounded text-sm pl-9 pr-3 py-2 w-64 focus:outline-none focus:border-[#003366]"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
+            <div className="relative w-full lg:w-80">
+              <AutoCompleteInput
+                opciones={searchOptions}
+                inputValue={selectedSearchOption}
+                onTyping={setSearchValue}
+                setInputValue={(option) => setSearchValue(option?.searchValue ?? "")}
+                key1="label"
+                key2="detail"
+                placeholder="Buscar por materia o por docente"
+                withIcon
               />
             </div>
 
