@@ -35,7 +35,8 @@ export const SYSTEM_MODULES: SystemModule[] = [
   },
   {
     id: "informacion-representante",
-    label: "Información representante",
+    label: "Mi información",
+    dashboardLabel: "Información representante",
     icon: "👤",
     path: "/dashboard/representante/perfil",
     allowedTypes: ["representante"],
@@ -156,17 +157,17 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedRoles: ["Vicerrector"],
   },
   {
+    id: "matriculacion-grupales",
+    label: "Matriculación",
+    icon: "📝",
+    path: "/dashboard/matriculacion/grupales",
+    allowedTypes: ["docente", "representante"],
+  },
+  {
     id: "cambiar-contrasena",
     label: "Cambiar contraseña",
     icon: "🔐",
     path: "/dashboard/perfil/contrasena",
-    allowedTypes: ["docente", "representante"],
-  },
-  {
-    id: "matriculacion-grupales",
-    label: "Matriculacion materias grupales",
-    icon: "✏️",
-    path: "/dashboard/matriculacion/grupales",
     allowedTypes: ["docente", "representante"],
   },
 ];
