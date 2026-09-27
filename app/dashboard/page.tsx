@@ -35,7 +35,7 @@ export default async function DashboardModules() {
               <span className="text-6xl">{module.icon}</span>
             </div>
             <span className="font-bold text-gray-800 text-center text-sm sm:text-base">
-              {module.label}
+              {module.dashboardLabel ?? module.label}
             </span>
           </Link>
         ))}
