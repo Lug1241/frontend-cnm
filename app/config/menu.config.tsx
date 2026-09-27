@@ -35,7 +35,8 @@ export const SYSTEM_MODULES: SystemModule[] = [
   },
   {
     id: "informacion-representante",
-    label: "Información representante",
+    label: "Mi información",
+    dashboardLabel: "Información representante",
     icon: "👤",
     path: "/dashboard/representante/perfil",
     allowedTypes: ["representante"],
@@ -164,12 +165,20 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedRoles: ["Vicerrector"],
   },
   {
+    id: "matriculacion-grupales",
+    label: "Matriculación",
+    icon: "📝",
+    path: "/dashboard/matriculacion/grupales",
+    allowedTypes: ["docente", "representante"],
+  },
+  {
     id: "cambiar-contrasena",
     label: "Cambiar contraseña",
     icon: "🔐",
     path: "/dashboard/perfil/contrasena",
     allowedTypes: ["docente", "representante"],
   },
+<<<<<<< HEAD
   {
     id: "matriculacion",
     label: "Matriculación",
@@ -194,6 +203,8 @@ export const SYSTEM_MODULES: SystemModule[] = [
       },
     ],
   },
+=======
+>>>>>>> 7caa34c (feat(representante): mostrar calificaciones y horario)
 ];
 
 // Función utilitaria para filtrar módulos y submódulos según type y rol

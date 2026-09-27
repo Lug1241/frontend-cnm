@@ -8,6 +8,7 @@ export interface EstudianteRepresentante {
   segundoNombre?: string;
   primerApellido: string;
   segundoApellido?: string;
+  cedulaPdf?: string | null;
   genero: string;
   fechaNacimiento: string;
   grupoEtnico: string;
@@ -17,6 +18,7 @@ export interface EstudianteRepresentante {
   direccion: string;
   jornada: string;
   nivel: string;
+  representanteCedula: string;
 }
 
 export interface MatriculaRepresentante {
