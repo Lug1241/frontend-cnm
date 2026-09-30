@@ -14,6 +14,7 @@ export interface SubModule {
 export interface SystemModule {
   id: string;
   label: string;
+  dashboardLabel?: string;
   icon: string;
   path: string;
   allowedTypes: UserType[];
@@ -34,9 +35,18 @@ export const SYSTEM_MODULES: SystemModule[] = [
   },
   {
     id: "informacion-representante",
-    label: "Información representante",
+    label: "Mi información",
+    dashboardLabel: "Información representante",
     icon: "👤",
     path: "/dashboard/representante/perfil",
+    allowedTypes: ["representante"],
+  },
+  {
+    id: "estudiantes-representante",
+    label: "Mis estudiantes",
+    dashboardLabel: "Información estudiantil",
+    icon: "🧑‍🤝‍🧑",
+    path: "/dashboard/representante/estudiantes",
     allowedTypes: ["representante"],
   },
   {
@@ -112,7 +122,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
     label: "Calificaciones",
     icon: "📊",
     path: "/dashboard/calificaciones",
-    allowedTypes: ["docente", "representante"],
+    allowedTypes: ["docente"],
     excludedRoles: ["Secretaria"],
   },
   {
@@ -120,7 +130,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
     label: "Solicitudes",
     icon: "📨",
     path: "/dashboard/solicitudes",
-    allowedTypes: ["docente", "representante"],
+    allowedTypes: ["docente"],
   },
   {
     id: "reportes-secretaria",
@@ -147,17 +157,17 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedRoles: ["Vicerrector"],
   },
   {
+    id: "matriculacion-grupales",
+    label: "Matriculación",
+    icon: "📝",
+    path: "/dashboard/matriculacion/grupales",
+    allowedTypes: ["docente", "representante"],
+  },
+  {
     id: "cambiar-contrasena",
     label: "Cambiar contraseña",
     icon: "🔐",
     path: "/dashboard/perfil/contrasena",
-    allowedTypes: ["docente", "representante"],
-  },
-  {
-    id: "matriculacion-grupales",
-    label: "Matriculacion materias grupales",
-    icon: "✏️",
-    path: "/dashboard/matriculacion/grupales",
     allowedTypes: ["docente", "representante"],
   },
 ];
