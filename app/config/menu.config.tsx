@@ -15,10 +15,12 @@ export interface SystemModule {
   id: string;
   label: string;
   dashboardLabel?: string;
+  dashboardLabel?: string;
   icon: string;
   path: string;
   allowedTypes: UserType[];
   allowedRoles?: string[];
+  excludedRoles?: UserRole[];
   excludedRoles?: UserRole[];
   submodules?: SubModule[];
   hideInGrid?: boolean;
@@ -37,8 +39,18 @@ export const SYSTEM_MODULES: SystemModule[] = [
     id: "informacion-representante",
     label: "Mi información",
     dashboardLabel: "Información representante",
+    label: "Mi información",
+    dashboardLabel: "Información representante",
     icon: "👤",
     path: "/dashboard/representante/perfil",
+    allowedTypes: ["representante"],
+  },
+  {
+    id: "estudiantes-representante",
+    label: "Mis estudiantes",
+    dashboardLabel: "Información estudiantil",
+    icon: "🧑‍🤝‍🧑",
+    path: "/dashboard/representante/estudiantes",
     allowedTypes: ["representante"],
   },
   {
@@ -132,12 +144,23 @@ export const SYSTEM_MODULES: SystemModule[] = [
     path: "/dashboard/calificaciones",
     allowedTypes: ["docente"],
     excludedRoles: ["Secretaria"],
+    allowedTypes: ["docente"],
+    excludedRoles: ["Secretaria"],
   },
   {
     id: "solicitudes",
     label: "Solicitudes",
     icon: "📨",
     path: "/dashboard/solicitudes",
+    allowedTypes: ["docente"],
+  },
+  {
+    id: "reportes-secretaria",
+    label: "Reportes",
+    icon: "📊",
+    path: "/dashboard/secretaria/reportes",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Secretaria"],
     allowedTypes: ["docente"],
   },
   {
@@ -163,6 +186,13 @@ export const SYSTEM_MODULES: SystemModule[] = [
     path: "/dashboard/vicerrector/fechas-notas",
     allowedTypes: ["docente"],
     allowedRoles: ["Vicerrector"],
+  },
+  {
+    id: "matriculacion-grupales",
+    label: "Matriculación",
+    icon: "📝",
+    path: "/dashboard/matriculacion/grupales",
+    allowedTypes: ["docente", "representante"],
   },
   {
     id: "matriculacion-grupales",
@@ -216,6 +246,7 @@ export const filterModulesByUser = (
   return modules
     .filter((module) => {
       if (!module.allowedTypes.includes(type)) return false;
+      if (module.excludedRoles?.includes(role)) return false;
       if (module.excludedRoles?.includes(role)) return false;
       if (module.allowedRoles && module.allowedRoles.length > 0) {
         if (!module.allowedRoles.includes(role)) return false;
