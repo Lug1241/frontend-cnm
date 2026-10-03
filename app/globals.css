@@ -74,3 +74,38 @@
     page-break-inside: avoid !important;
   }
 }
+
+@media print {
+  .administracion-print {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    break-after: avoid-page !important;
+    page-break-after: avoid !important;
+  }
+
+  .administracion-print .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  .administracion-print table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+    font-size: 9pt !important;
+  }
+
+  .administracion-print th,
+  .administracion-print td {
+    padding: 5px 7px !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .administracion-print tr,
+  .administracion-print header {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

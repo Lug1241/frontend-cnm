@@ -152,6 +152,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
     label: "Solicitudes",
     icon: "📨",
     path: "/dashboard/solicitudes",
+<<<<<<< HEAD
     allowedTypes: ["docente"],
   },
   {
@@ -162,12 +163,16 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedTypes: ["docente"],
     allowedRoles: ["Secretaria"],
     allowedTypes: ["docente"],
+=======
+    allowedTypes: ["docente", "representante"],
+    excludedRoles: ["Secretaria"],
+>>>>>>> 9633371 (feat: add administration school pages and types)
   },
   {
-    id: "reportes-secretaria",
-    label: "Reportes",
-    icon: "📊",
-    path: "/dashboard/secretaria/reportes",
+    id: "administracion-escolar",
+    label: "Administración Escolar",
+    icon: "🗃️",
+    path: "/dashboard/secretaria/administracion-escolar",
     allowedTypes: ["docente"],
     allowedRoles: ["Secretaria"],
   },
@@ -176,6 +181,22 @@ export const SYSTEM_MODULES: SystemModule[] = [
     label: "Fechas Procesos",
     icon: "📅",
     path: "/dashboard/secretaria/procesos",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Secretaria"],
+  },
+  {
+    id: "reportes-secretaria",
+    label: "Reportes",
+    icon: "📊",
+    path: "/dashboard/secretaria/reportes",
+    allowedTypes: ["docente"],
+    allowedRoles: ["Secretaria"],
+  },
+  {
+    id: "reportes-secretaria",
+    label: "Reportes",
+    icon: "📊",
+    path: "/dashboard/secretaria/reportes",
     allowedTypes: ["docente"],
     allowedRoles: ["Secretaria"],
   },
@@ -215,6 +236,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
     icon: "✏️",
     path: "/dashboard/matriculacion",
     allowedTypes: ["docente", "representante"],
+<<<<<<< HEAD
     submodules: [
       {
         id: "matriculacion-grupales",
@@ -232,6 +254,9 @@ export const SYSTEM_MODULES: SystemModule[] = [
         allowedRoles: ["Administrador"],
       },
     ],
+=======
+    excludedRoles: ["Secretaria"],
+>>>>>>> 9633371 (feat: add administration school pages and types)
   },
 =======
 >>>>>>> 7caa34c (feat(representante): mostrar calificaciones y horario)

@@ -24,12 +24,12 @@ export default async function DashboardModules() {
         Módulos
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center">
+      <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 sm:gap-6 lg:gap-8">
         {gridModules.map((module) => (
           <Link
             key={module.id}
             href={module.path}
-            className="flex flex-col items-center justify-center bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full min-h-48 max-w-sm p-6 gap-4 border border-gray-100 group"
+            className="group flex min-h-48 w-full flex-col items-center justify-center gap-4 rounded-xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
           >
             <div className="flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <span className="text-6xl">{module.icon}</span>
