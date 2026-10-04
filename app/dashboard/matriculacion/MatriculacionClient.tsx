@@ -11,7 +11,6 @@ import TablaEstudiantesRepresentante from "./components/TablaEstudiantesRepresen
 import BannerEstudianteMatriculando from "./components/BannerEstudianteMatriculando";
 import Toast from "@/app/components/ui/Toast";
 import { UserType } from "@/app/config/menu.config";
-import Toast from "@/app/components/ui/Toast";
 import {
   AsignacionMatriculacion,
   crearInscripcionesAction,
@@ -75,9 +74,6 @@ export default function MatriculacionClient({
   estadoPeriodoMatricula?: EstadoPeriodoMatricula | null;
   verificacionDocsRepresentante?: VerificacionDocsRepresentante | null;
   estudiantesRepresentante?: EstudianteRepresentanteItem[];
-}: {
-  periodoActivo: PeriodoActivo | null;
-  tipoInicial: "grupales" | "individuales";
 }) {
   const [estudiante, setEstudiante] = useState<EstudianteSeleccionado | null>(null);
   const [matriculaId, setMatriculaId] = useState<number | null>(null);
@@ -317,12 +313,6 @@ export default function MatriculacionClient({
             )}
           </div>
           {estudiante && userType !== "representante" && (
-            <h1 className="text-2xl font-bold text-[#003366]">Matriculación</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Periodo {periodoActivo?.descripcion || "no disponible"}
-            </p>
-          </div>
-          {estudiante && (
             <button onClick={resetStudent} className="text-sm font-medium text-[#003366] hover:underline">
               Cambiar estudiante
             </button>

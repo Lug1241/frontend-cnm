@@ -37,16 +37,8 @@ export default async function CalificacionesCursoPage({
   searchParams: Promise<{
     periodo?: string;
     ids?: string;
-<<<<<<< HEAD
-<<<<<<< HEAD
     nivel?: string;
     curso?: string;
-=======
->>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
-=======
-    nivel?: string;
-    curso?: string;
->>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
   }>;
 }) {
   const cookieStore = await cookies();
@@ -129,10 +121,6 @@ export default async function CalificacionesCursoPage({
 
   const datosCurso = obtenerDatosCurso(asignaciones);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
   const backQuery = new URLSearchParams({
     periodo: String(periodoId),
   });
@@ -146,13 +134,6 @@ export default async function CalificacionesCursoPage({
   }
 
   const backHref = `/dashboard/secretaria/administracion-escolar?${backQuery.toString()}`;
-<<<<<<< HEAD
-=======
-  const backHref =
-    `/dashboard/secretaria/administracion-escolar?periodo=${periodoId}`;
->>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
-=======
->>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
 
   return (
     <div className="w-full p-4 sm:p-6">
@@ -214,12 +195,4 @@ export default async function CalificacionesCursoPage({
       </div>
     </div>
   );
-<<<<<<< HEAD
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 35b3846 (feat: enhance administration school pages with new functionalities and UI improvements)
-=======
-}
->>>>>>> ca2a4e9 (fix(administracion-escolar): alinear vistas y conservar contexto de navegación)
