@@ -1,19 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import CalificacionesTable from "./CalificacionesTable";
 
-import type { EstudianteCurso } from "@/types/Calificaciones";
 import type {
-  FechaProceso,
-  DescripcionFechaNota,
-} from "@/types/FechaProceso";
-
-import PartialGradesTable from "./PartialGradesTable";
-import QuimestralGradesTable from "./QuimestralGradesTable";
-import FinalGradesTable from "./FinalGradesTable";
+  EtapaCalificacion,
+  EstudianteCurso,
+} from "@/types/Calificaciones";
+import type { FechaProceso, DescripcionFechaNota } from "@/types/FechaProceso";
 
 interface Props {
   estudiantes: EstudianteCurso[];
+  etapasHabilitadas: EtapaCalificacion[];
   esBE: boolean;
   fechasNotas: FechaProceso[];
 
@@ -25,20 +23,11 @@ interface Props {
   jornada: string;
 }
 
-type MainTab =
-  | "quimestre1"
-  | "quimestre2"
-  | "nota_final";
+type MainTab = "quimestre1" | "quimestre2" | "nota_final";
 
-type Quimestre1Tab =
-  | "parcial1_quim1"
-  | "parcial2_quim1"
-  | "quimestre1";
+type Quimestre1Tab = "parcial1_quim1" | "parcial2_quim1" | "quimestre1";
 
-type Quimestre2Tab =
-  | "parcial1_quim2"
-  | "parcial2_quim2"
-  | "quimestre2";
+type Quimestre2Tab = "parcial1_quim2" | "parcial2_quim2" | "quimestre2";
 
 function formatearFecha(fecha: string) {
   const [anio, mes, dia] = fecha.split("-");
@@ -50,57 +39,34 @@ function formatearFecha(fecha: string) {
   return `${dia}/${mes}/${anio}`;
 }
 
-function obtenerSubtitulo(
-  descripcion: DescripcionFechaNota,
-  esBE: boolean,
-) {
-  const subtitulosSuperior: Record<
-    DescripcionFechaNota,
-    string
-  > = {
-    parcial1_quim1:
-      "ACTA DE CALIFICACIONES PRIMER PARCIAL - PRIMER QUIMESTRE",
-    parcial2_quim1:
-      "ACTA DE CALIFICACIONES SEGUNDO PARCIAL - PRIMER QUIMESTRE",
-    quimestre1:
-      "ACTA DE RESUMEN DEL PRIMER QUIMESTRE",
-    parcial1_quim2:
-      "ACTA DE CALIFICACIONES PRIMER PARCIAL - SEGUNDO QUIMESTRE",
+function obtenerSubtitulo(descripcion: DescripcionFechaNota, esBE: boolean) {
+  const subtitulosSuperior: Record<DescripcionFechaNota, string> = {
+    parcial1_quim1: "ACTA DE CALIFICACIONES PRIMER PARCIAL - PRIMER QUIMESTRE",
+    parcial2_quim1: "ACTA DE CALIFICACIONES SEGUNDO PARCIAL - PRIMER QUIMESTRE",
+    quimestre1: "ACTA DE RESUMEN DEL PRIMER QUIMESTRE",
+    parcial1_quim2: "ACTA DE CALIFICACIONES PRIMER PARCIAL - SEGUNDO QUIMESTRE",
     parcial2_quim2:
       "ACTA DE CALIFICACIONES SEGUNDO PARCIAL - SEGUNDO QUIMESTRE",
-    quimestre2:
-      "ACTA DE RESUMEN DEL SEGUNDO QUIMESTRE",
-    nota_final:
-      "ACTA DE RESUMEN FINAL",
+    quimestre2: "ACTA DE RESUMEN DEL SEGUNDO QUIMESTRE",
+    nota_final: "ACTA DE RESUMEN FINAL",
   };
 
-  const subtitulosBE: Record<
-    DescripcionFechaNota,
-    string
-  > = {
-    parcial1_quim1:
-      "NOTA DEL PRIMER PARCIAL - PRIMER QUIMESTRE",
-    parcial2_quim1:
-      "NOTA DEL SEGUNDO PARCIAL - PRIMER QUIMESTRE",
-    quimestre1:
-      "INFORME DE RENDIMIENTO ACADÉMICO QUIMESTRE 1",
-    parcial1_quim2:
-      "NOTA DEL PRIMER PARCIAL - SEGUNDO QUIMESTRE",
-    parcial2_quim2:
-      "NOTA DEL SEGUNDO PARCIAL - SEGUNDO QUIMESTRE",
-    quimestre2:
-      "INFORME DE RENDIMIENTO ACADÉMICO QUIMESTRE 2",
-    nota_final:
-      "ACTA DE CALIFICACIONES - FINAL BE",
+  const subtitulosBE: Record<DescripcionFechaNota, string> = {
+    parcial1_quim1: "NOTA DEL PRIMER PARCIAL - PRIMER QUIMESTRE",
+    parcial2_quim1: "NOTA DEL SEGUNDO PARCIAL - PRIMER QUIMESTRE",
+    quimestre1: "INFORME DE RENDIMIENTO ACADÉMICO QUIMESTRE 1",
+    parcial1_quim2: "NOTA DEL PRIMER PARCIAL - SEGUNDO QUIMESTRE",
+    parcial2_quim2: "NOTA DEL SEGUNDO PARCIAL - SEGUNDO QUIMESTRE",
+    quimestre2: "INFORME DE RENDIMIENTO ACADÉMICO QUIMESTRE 2",
+    nota_final: "ACTA DE CALIFICACIONES - FINAL BE",
   };
 
-  return esBE
-    ? subtitulosBE[descripcion]
-    : subtitulosSuperior[descripcion];
+  return esBE ? subtitulosBE[descripcion] : subtitulosSuperior[descripcion];
 }
 
 export default function GradesWorkspace({
   estudiantes,
+  etapasHabilitadas,
   esBE,
   fechasNotas,
   nombreDocente,
@@ -110,13 +76,11 @@ export default function GradesWorkspace({
   periodo,
   jornada,
 }: Props) {
-  const [escalaBE, setEscalaBE] =
-    useState<"Cualitativa" | "Cuantitativa">(
-      "Cualitativa",
-    );
+  const [escalaBE, setEscalaBE] = useState<"Cualitativa" | "Cuantitativa">(
+    "Cualitativa",
+  );
 
-  const [mainTab, setMainTab] =
-    useState<MainTab>("quimestre1");
+  const [mainTab, setMainTab] = useState<MainTab>("quimestre1");
 
   const [quimestre1Tab, setQuimestre1Tab] =
     useState<Quimestre1Tab>("parcial1_quim1");
@@ -132,18 +96,22 @@ export default function GradesWorkspace({
         : "nota_final";
 
   const fechaActiva = useMemo(
-    () =>
-      fechasNotas.find(
-        (fecha) =>
-          fecha.descripcion === descripcionActiva,
-      ),
+    () => fechasNotas.find((fecha) => fecha.descripcion === descripcionActiva),
     [descripcionActiva, fechasNotas],
   );
 
-  const subtitulo = obtenerSubtitulo(
-    descripcionActiva,
-    esBE,
-  );
+  const etapas: Record<DescripcionFechaNota, EtapaCalificacion> = {
+    parcial1_quim1: "Q1_P1",
+    parcial2_quim1: "Q1_P2",
+    quimestre1: "Q1_EXAMEN",
+    parcial1_quim2: "Q2_P1",
+    parcial2_quim2: "Q2_P2",
+    quimestre2: "Q2_EXAMEN",
+    nota_final: "FINAL",
+  };
+  const etapa = etapas[descripcionActiva];
+  const habilitada = etapasHabilitadas.includes(etapa);
+  const subtitulo = obtenerSubtitulo(descripcionActiva, esBE);
 
   return (
     <div className="space-y-4">
@@ -152,9 +120,7 @@ export default function GradesWorkspace({
           CONSERVATORIO NACIONAL DE MÚSICA
         </h2>
 
-        <h3 className="mt-1 text-center font-semibold">
-          {subtitulo}
-        </h3>
+        <h3 className="mt-1 text-center font-semibold">{subtitulo}</h3>
 
         <div className="mt-5 grid gap-2 text-sm md:grid-cols-2">
           <div>
@@ -186,17 +152,13 @@ export default function GradesWorkspace({
       {esBE && (
         <div className="flex justify-end">
           <label className="flex items-center gap-2 text-sm">
-            <span className="font-medium text-gray-700">
-              Escala:
-            </span>
+            <span className="font-medium text-gray-700">Escala:</span>
 
             <select
               value={escalaBE}
               onChange={(event) =>
                 setEscalaBE(
-                  event.target.value as
-                    | "Cualitativa"
-                    | "Cuantitativa",
+                  event.target.value as "Cualitativa" | "Cuantitativa",
                 )
               }
               className="rounded-md border border-gray-300 bg-white px-3 py-2"
@@ -256,11 +218,7 @@ export default function GradesWorkspace({
             <button
               key={key}
               type="button"
-              onClick={() =>
-                setQuimestre1Tab(
-                  key as Quimestre1Tab,
-                )
-              }
+              onClick={() => setQuimestre1Tab(key as Quimestre1Tab)}
               className={`border-b-2 px-4 py-3 text-sm font-medium ${
                 quimestre1Tab === key
                   ? "border-blue-600 text-blue-600"
@@ -283,11 +241,7 @@ export default function GradesWorkspace({
             <button
               key={key}
               type="button"
-              onClick={() =>
-                setQuimestre2Tab(
-                  key as Quimestre2Tab,
-                )
-              }
+              onClick={() => setQuimestre2Tab(key as Quimestre2Tab)}
               className={`border-b-2 px-4 py-3 text-sm font-medium ${
                 quimestre2Tab === key
                   ? "border-blue-600 text-blue-600"
@@ -302,8 +256,7 @@ export default function GradesWorkspace({
 
       {fechaActiva ? (
         <div className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-center text-sm text-yellow-800">
-          Disponible del{" "}
-          {formatearFecha(fechaActiva.fechaInicio)} al{" "}
+          Disponible del {formatearFecha(fechaActiva.fechaInicio)} al{" "}
           {formatearFecha(fechaActiva.fechaFin)}
         </div>
       ) : (
@@ -312,35 +265,14 @@ export default function GradesWorkspace({
         </div>
       )}
 
-      {descripcionActiva.startsWith("parcial") && (
-        <PartialGradesTable
-          estudiantes={estudiantes}
-          esBE={esBE}
-        />
-      )}
-
-      {descripcionActiva === "quimestre1" && (
-        <QuimestralGradesTable
-          estudiantes={estudiantes}
-          esBE={esBE}
-          escalaBE={escalaBE}
-        />
-      )}
-
-      {descripcionActiva === "quimestre2" && (
-        <QuimestralGradesTable
-          estudiantes={estudiantes}
-          esBE={esBE}
-          escalaBE={escalaBE}
-        />
-      )}
-
-      {descripcionActiva === "nota_final" && (
-        <FinalGradesTable
-          estudiantes={estudiantes}
-          esBE={esBE}
-        />
-      )}
+      <CalificacionesTable
+        key={etapa}
+        estudiantes={estudiantes}
+        esBE={esBE}
+        escalaBE={escalaBE}
+        etapa={etapa}
+        habilitada={habilitada}
+      />
     </div>
   );
 }
