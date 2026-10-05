@@ -15,12 +15,10 @@ export interface SystemModule {
   id: string;
   label: string;
   dashboardLabel?: string;
-  dashboardLabel?: string;
   icon: string;
   path: string;
   allowedTypes: UserType[];
   allowedRoles?: string[];
-  excludedRoles?: UserRole[];
   excludedRoles?: UserRole[];
   submodules?: SubModule[];
   hideInGrid?: boolean;
@@ -39,18 +37,8 @@ export const SYSTEM_MODULES: SystemModule[] = [
     id: "informacion-representante",
     label: "Mi información",
     dashboardLabel: "Información representante",
-    label: "Mi información",
-    dashboardLabel: "Información representante",
     icon: "👤",
     path: "/dashboard/representante/perfil",
-    allowedTypes: ["representante"],
-  },
-  {
-    id: "estudiantes-representante",
-    label: "Mis estudiantes",
-    dashboardLabel: "Información estudiantil",
-    icon: "🧑‍🤝‍🧑",
-    path: "/dashboard/representante/estudiantes",
     allowedTypes: ["representante"],
   },
   {
@@ -144,29 +132,14 @@ export const SYSTEM_MODULES: SystemModule[] = [
     path: "/dashboard/calificaciones",
     allowedTypes: ["docente"],
     excludedRoles: ["Secretaria"],
-    allowedTypes: ["docente"],
-    excludedRoles: ["Secretaria"],
   },
   {
     id: "solicitudes",
     label: "Solicitudes",
     icon: "📨",
     path: "/dashboard/solicitudes",
-<<<<<<< HEAD
-    allowedTypes: ["docente"],
-  },
-  {
-    id: "reportes-secretaria",
-    label: "Reportes",
-    icon: "📊",
-    path: "/dashboard/secretaria/reportes",
-    allowedTypes: ["docente"],
-    allowedRoles: ["Secretaria"],
-    allowedTypes: ["docente"],
-=======
     allowedTypes: ["docente", "representante"],
     excludedRoles: ["Secretaria"],
->>>>>>> 9633371 (feat: add administration school pages and types)
   },
   {
     id: "administracion-escolar",
@@ -193,14 +166,6 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedRoles: ["Secretaria"],
   },
   {
-    id: "reportes-secretaria",
-    label: "Reportes",
-    icon: "📊",
-    path: "/dashboard/secretaria/reportes",
-    allowedTypes: ["docente"],
-    allowedRoles: ["Secretaria"],
-  },
-  {
     id: "fechas-notas",
     label: "Fechas para notas",
     icon: "📅",
@@ -209,34 +174,19 @@ export const SYSTEM_MODULES: SystemModule[] = [
     allowedRoles: ["Vicerrector"],
   },
   {
-    id: "matriculacion-grupales",
-    label: "Matriculación",
-    icon: "📝",
-    path: "/dashboard/matriculacion/grupales",
-    allowedTypes: ["docente", "representante"],
-  },
-  {
-    id: "matriculacion-grupales",
-    label: "Matriculación",
-    icon: "📝",
-    path: "/dashboard/matriculacion/grupales",
-    allowedTypes: ["docente", "representante"],
-  },
-  {
     id: "cambiar-contrasena",
     label: "Cambiar contraseña",
     icon: "🔐",
     path: "/dashboard/perfil/contrasena",
     allowedTypes: ["docente", "representante"],
   },
-<<<<<<< HEAD
   {
     id: "matriculacion",
     label: "Matriculación",
     icon: "✏️",
     path: "/dashboard/matriculacion",
     allowedTypes: ["docente", "representante"],
-<<<<<<< HEAD
+    excludedRoles: ["Secretaria"],
     submodules: [
       {
         id: "matriculacion-grupales",
@@ -254,12 +204,7 @@ export const SYSTEM_MODULES: SystemModule[] = [
         allowedRoles: ["Administrador"],
       },
     ],
-=======
-    excludedRoles: ["Secretaria"],
->>>>>>> 9633371 (feat: add administration school pages and types)
   },
-=======
->>>>>>> 7caa34c (feat(representante): mostrar calificaciones y horario)
 ];
 
 // Función utilitaria para filtrar módulos y submódulos según type y rol
@@ -271,7 +216,6 @@ export const filterModulesByUser = (
   return modules
     .filter((module) => {
       if (!module.allowedTypes.includes(type)) return false;
-      if (module.excludedRoles?.includes(role)) return false;
       if (module.excludedRoles?.includes(role)) return false;
       if (module.allowedRoles && module.allowedRoles.length > 0) {
         if (!module.allowedRoles.includes(role)) return false;
