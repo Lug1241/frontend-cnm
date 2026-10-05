@@ -4,15 +4,15 @@ import { getCurrentDocente } from "../_lib/docente";
 import { fetchAPI } from "@/lib/api";
 import { Asignacion } from "@/types/Asignacion";
 import { PeriodoAcademico } from "@/types/PeriodoAcademico";
-import { EstudianteCurso } from "@/types/Calificaciones";
+import {
+  CalificacionesDocenteResponse,
+  EstudianteCurso,
+} from "@/types/Calificaciones";
 
 import type { FechaProceso } from "@/types/FechaProceso";
 import GradesWorkspace from "./GradesWorkspace";
 
-import {
-  agruparCursos,
-} from "../_lib/cursos";
-
+import { agruparCursos } from "../_lib/cursos";
 
 interface AsignacionesResponse {
   data: Asignacion[];
@@ -47,24 +47,15 @@ export default async function CursoCalificacionesPage({
 }) {
   const { cursoId } = await params;
 
-  const [
-    docenteActual,
-    periodoActivo,
-    fechasResponse,
-  ] = await Promise.all([
+  const [docenteActual, periodoActivo, fechasResponse] = await Promise.all([
     getCurrentDocente(),
 
-    fetchAPI<PeriodoAcademico>(
-      "/periodo_academico/activo",
-    ),
+    fetchAPI<PeriodoAcademico>("/periodo_academico/activo"),
 
     fetchAPI<FechasProcesosResponse>(
       "/fechas_procesos/obtener?page=1&limit=20&search=fechas_notas",
     ).catch((error) => {
-      console.error(
-        "Error cargando fechas de notas:",
-        error,
-      );
+      console.error("Error cargando fechas de notas:", error);
 
       return {
         data: [] as FechaProceso[],
@@ -72,21 +63,17 @@ export default async function CursoCalificacionesPage({
     }),
   ]);
 
-  const response =
-    await fetchAPI<AsignacionesResponse>(
-      `/asignaciones/docente/${docenteActual.id}`,
-    );
+  const response = await fetchAPI<AsignacionesResponse>(
+    `/asignaciones/docente/${docenteActual.id}`,
+  );
 
   const asignacionesPeriodo = (response.data ?? []).filter(
-    (asignacion) =>
-      asignacion.periodoAcademico?.id === periodoActivo.id,
+    (asignacion) => asignacion.periodoAcademico?.id === periodoActivo.id,
   );
 
   const cursos = agruparCursos(asignacionesPeriodo);
 
-  const curso = cursos.find(
-    (item) => item.id === cursoId,
-  );
+  const curso = cursos.find((item) => item.id === cursoId);
 
   if (!curso) {
     notFound();
@@ -95,16 +82,13 @@ export default async function CursoCalificacionesPage({
   const respuestas = await Promise.all(
     curso.asignaciones
       .filter(
-        (
-          asignacion,
-        ): asignacion is Asignacion & { id: number } =>
+        (asignacion): asignacion is Asignacion & { id: number } =>
           typeof asignacion.id === "number",
       )
       .map(async (asignacion) => {
-        const estudiantes =
-          await fetchAPI<EstudianteAsignacion[]>(
-            `/inscripcion/asignacion/${asignacion.id}`,
-          );
+        const estudiantes = await fetchAPI<EstudianteAsignacion[]>(
+          `/inscripcion/asignacion/${asignacion.id}`,
+        );
 
         return estudiantes.map((estudiante) => ({
           ...estudiante,
@@ -113,22 +97,27 @@ export default async function CursoCalificacionesPage({
       }),
   );
 
-  const estudiantes: EstudianteCurso[] =
-    respuestas
-      .flat()
-      .sort((a, b) =>
-        a.nombreCompleto.localeCompare(
-          b.nombreCompleto,
-          "es",
-        ),
-      )
-      .map((estudiante, index) => ({
-        ...estudiante,
-        nro: index + 1,
-      }));
+  const notas = await fetchAPI<CalificacionesDocenteResponse>(
+    "/calificaciones/docente/asignaciones?ids=" +
+      curso.asignaciones.map((a) => a.id).join(","),
+    { cache: "no-store" },
+  );
+  const estudiantes: EstudianteCurso[] = respuestas
+    .flat()
+    .sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto, "es"))
+    .map((estudiante, index) => ({
+      ...estudiante,
+      nro: index + 1,
+      reporte: notas.estudiantes.find(
+        (r) => r.idInscripcion === estudiante.idInscripcion,
+      ),
+      registros: notas.registros.filter(
+        (r) => r.inscripcionId === estudiante.idInscripcion,
+      ),
+    }));
 
-    const nombreDocente =
-      `${docenteActual.primerNombre} ${docenteActual.primerApellido}`.trim();
+  const nombreDocente =
+    `${docenteActual.primerNombre} ${docenteActual.primerApellido}`.trim();
 
   return (
     <div className="w-full p-4 sm:p-8">
@@ -140,6 +129,7 @@ export default async function CursoCalificacionesPage({
 
       <GradesWorkspace
         estudiantes={estudiantes}
+        etapasHabilitadas={notas.etapasHabilitadas}
         esBE={curso.tipoNivel === "BE"}
         fechasNotas={fechasResponse.data ?? []}
         nombreDocente={nombreDocente}
@@ -151,9 +141,7 @@ export default async function CursoCalificacionesPage({
             : curso.asignaciones[0]?.paralelo || "—"
         }
         periodo={periodoActivo.descripcion}
-        jornada={determinarJornada(
-          curso.asignaciones[0]?.horaInicio,
-        )}
+        jornada={determinarJornada(curso.asignaciones[0]?.horaInicio)}
       />
     </div>
   );
